@@ -1,76 +1,70 @@
+#include "client.h"
 #include <stdio.h>
-#include <string.h>  
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>   
 #include <arpa/inet.h>    
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <sys/time.h>
 #include <iostream>
 #include <netdb.h>
 
-using namespace std;
-
-int main()
+Client::Client()
 {
-    // Create socket
-    int sock = socket(AF_INET , SOCK_STREAM , 0);
+    // Create a socket
+    sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1)
     {
         cerr << "Can't create a socket! Quitting" << endl;
-        return -1;
+        return;
     }
 
     // Create a hint structure for the server we're connecting with
-    int port = 54000;
-    string ipAddress = "127.0.0.1"; // localhost
-
-    sockaddr_in hint;
     hint.sin_family = AF_INET;
-    hint.sin_port = htons(port);
-    inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr);
+    hint.sin_port = htons(PORT);
+    inet_pton(AF_INET, IP, &hint.sin_addr);
 
-    // Connect to server
+    // Connect to the server on the socket
     int connectRes = connect(sock, (sockaddr*)&hint, sizeof(hint));
     if (connectRes == -1)
     {
-        return 1;
+        cerr << "Can't connect to server, Err #" << errno << endl;
+        return;
     }
+}
 
+void Client::run(){
     // Do-while loop to send and receive data
-    char buf[4096];
-    string userInput;
-
     do {
         // Prompt the user for some text
         cout << "> ";
         getline(cin, userInput);
 
-        // Send the text
-        int sendRes = send(sock, userInput.c_str(), userInput.size() + 1, 0);
-        if (sendRes == -1)
+        if (userInput.size() > 0) // Make sure the user has typed in something
         {
-            cerr << "Could not send to server! Whoops!\r" << endl;
+            // Send the text
+            int sendRes = send(sock, userInput.c_str(), userInput.size() + 1, 0);
+            if (sendRes == -1)
+            {
+                cerr << "Could not send to server! Err #" << errno << endl;
+            }
         }
 
         // Wait for response
-        memset(buf, 0, 4096);
-        int bytesReceived = recv(sock, buf, 4096, 0);
-        if (bytesReceived == -1)
+        memset(buffer, 0, 4096);
+        int bytesReceived = recv(sock, buffer, 4096, 0);
+        if (bytesReceived > 0)
         {
-            cerr << "There was an error getting response from server\r" << endl;
+            // Echo response to console
+            cout << "SERVER> " << string(buffer, 0, bytesReceived) << endl;
         }
-        else
+        else 
         {
-            // Display response
-            cout << "SERVER> " << string(buf, 0, bytesReceived) << "\r" << endl;
+            cerr << "There was a connection issue" << endl;
         }
     } while (true);
 
     // Close the socket
     close(sock);
-    
-    return 0;
 }
