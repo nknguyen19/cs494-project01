@@ -35,3 +35,9 @@
 /CMakeFiles
 /libs
 /utils
+install_manifest.txt
+Makefile
+CMakeCache.txt
+cmake_install.cmake
+uninstall.cmake
+wx-config
