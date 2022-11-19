@@ -10,6 +10,7 @@
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
 #include <fcntl.h>
 #include <iostream>
+#include "utils.h"
 
 using namespace std;
 
@@ -172,10 +173,69 @@ void Server::run()
 				else
 				{
 					// set the string terminating NULL byte on the end of the data read
-					buffer[valread] = '\0';
-					send(sd, buffer, strlen(buffer), 0);
+					// buffer[valread] = '\0';
+					executeCommand(string(buffer), sd);
 				}
 			}
 		}
+	}
+}
+
+void Server::executeCommand(string message, int client_socket)
+{
+	string command = parseMessageCommand(message);
+	string content = parseMessageContent(message);
+
+	if (command == "REGISTER")
+	{
+		// validate nickname
+		if (!validateNickname(content))
+		{
+			string message = "400 Nickname is invalid. Please try again.\n";
+			send(client_socket, message.c_str(), message.length(), 0);
+			return;
+		}
+		bool isNicknameExist = false;
+		for (auto game: games)
+		{	
+			if (game.isNicknameExist(content))
+			{
+				isNicknameExist = true;
+				break;
+			}
+		}
+		if (isNicknameExist)
+		{
+			string message = "400 Nickname is already taken. Please try again.\n";
+			send(client_socket, message.c_str(), message.length(), 0);
+			return;
+		}
+
+		// register nickname
+		bool hasJoinedGame = false;
+		for (auto game: games)
+		{
+			Player player(client_socket, content);
+			if (game.addPlayer(player))
+			{
+				hasJoinedGame = true;
+				break;
+			}
+		}
+		if (!hasJoinedGame)
+		{
+			Game game;
+			Player player(client_socket, content);
+			game.addPlayer(player);
+			games.push_back(game);
+		}
+		string message = "200 Nickname registered successfully.\n";
+		send(client_socket, message.c_str(), message.length(), 0);
+		return;
+	}
+	else
+	{
+		cout << "Invalid command" << endl;
+		send(client_socket, "404 Invalid command\n", 20, 0);
 	}
 }

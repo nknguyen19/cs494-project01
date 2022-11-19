@@ -20,12 +20,13 @@ private:
     char buffer[1025];
     sockaddr_in address;
     fd_set readfds;
-    // vector<Game> games;
+    vector<Game> games;
 public:
     Server();
     ~Server();
 
     void run();
+    void executeCommand(string message, int client_socket);
 };
 
 #endif

@@ -3,10 +3,7 @@
 
 #include "question.h"
 #include <vector>
-
-#define WAITING 0
-#define PLAYING 1
-#define FINISHED 2
+#include "player.h"
 
 using namespace std;
 
@@ -16,6 +13,7 @@ private:
     int currentNumberOfPlayers;
     int maxNumberOfPlayers;
     vector<Question> questions;
+    vector<Player> players;
     int currentQuestionIndex;
     int state;
 
@@ -23,9 +21,14 @@ public:
     Game();
     ~Game();
 
-    void run();
-    void initQuestions();
-    void parseMessage(string message);
+    // void run();
+    // void initQuestions();
+    bool isNicknameExist(string nickname);
+    bool addPlayer(Player player);
+
+    static int WAITING;
+    static int PLAYING;
+    static int FINISHED;
 };
 
 #endif // GAME_SERVER_H
