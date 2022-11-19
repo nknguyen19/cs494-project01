@@ -92,6 +92,21 @@ void MyFrame::OnRegister(wxCommandEvent& event)
 {
     wxTextCtrl *username_textbox = (wxTextCtrl*)FindWindow(ID_UsernameTextbox);
     wxString username = username_textbox->GetValue();
-    wxLogMessage("Username: %s", username);
+    // wxLogMessage("Username: %s", username);
+
+    //Check user name with regex
+    //If valid, send to server
+    //If invalid, display error message
+    //Valid username contains alphanumeric characters and underscores only,maximum length of 10 characters
+    std::regex username_regex("^[a-zA-Z0-9_]{1,10}$");
+    if(std::regex_match(username.ToStdString(), username_regex))
+    {
+        wxMessageBox("Username is valid\nUsername: " + username, "Username is valid", wxOK | wxICON_INFORMATION);
+    }   
+    else
+    {
+        wxMessageBox("Username is invalid");
+    }
+
     // wxLogMessage("Register button clicked!");
 }
