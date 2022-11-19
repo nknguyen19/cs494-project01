@@ -2,22 +2,23 @@
 #define QUESTION_H
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
 class Question
 {
 private:
-    int id;
     string question;
-    string answer;
+    vector<string> choices;
+    char answer;
 
 public:
-    Question();
-    Question(int id, string question, string answer);
+    Question(string question, vector<string> choices, char answer);
     ~Question();
 
-    bool isCorrect(string answer);
+    bool isCorrect(char answer);
+    void print();
 };
 
 #endif

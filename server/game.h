@@ -22,7 +22,7 @@ public:
     ~Game();
 
     // void run();
-    // void initQuestions();
+    void initQuestions();
     bool isNicknameExist(string nickname);
     bool addPlayer(Player player);
 

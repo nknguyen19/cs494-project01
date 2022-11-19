@@ -1,16 +1,10 @@
 #include "question.h"
+#include <iostream>
 
-Question::Question()
+Question::Question(string question, vector<string> choices, char answer)
 {
-    this->id = 0;
-    this->question = "";
-    this->answer = "";
-}
-
-Question::Question(int id, string question, string answer)
-{
-    this->id = id;
     this->question = question;
+    this->choices = choices;
     this->answer = answer;
 }
 
@@ -18,7 +12,16 @@ Question::~Question()
 {
 }
 
-bool Question::isCorrect(string answer)
+bool Question::isCorrect(char answer)
 {
     return this->answer == answer;
+}
+
+void Question::print()
+{
+    cout << this->question << endl;
+    for (int i = 0; i < this->choices.size(); i++)
+    {
+        cout << (char)(i + 'A') << ". " << this->choices[i] << endl;
+    }
 }

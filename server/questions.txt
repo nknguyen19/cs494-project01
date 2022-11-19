@@ -1,0 +1,126 @@
+Photoelectric effect is associated with?
+Non-Metals
+Gases
+Metals
+Photosynthesis
+C
+Which of these is not a JavaScript library? 
+jQuery
+Angular
+React
+Immutablejs
+B
+Which is a CSS framework? 
+Popper
+Modernizr
+Bootstrap
+Sass
+C
+question: Which language is closer to the hardware? 
+Python
+Hash
+C++
+JavaScript
+C
+Who is the creator of Python?
+Guido van Rossium
+Brendan Eich
+Google Inc
+Dan Abrahmov
+A
+Colourless and odourless is the property of? 
+Calcium
+Ammonium
+Chlorine
+Methane
+D
+Who created the C programming language? 
+Ken Jones
+Dennis Ritchie
+Bjarnne Stautroup
+Tom Smith
+B
+What is the full meaning of PHP?
+Hypertext Preprocessor
+Pre Hypertext Processor
+Page High Power
+Power High Page
+A
+In JavaScript which is an abstract data type? 
+Array
+List
+Symbol
+String
+B
+Which is a PHP framework? 
+Composer
+WebGl
+Mongoose
+Laravel
+D
+Which is the largest country by population? 
+Russia
+United States of America
+China
+Japan
+C
+Flourine element is known as?
+Halogen
+Ester
+Rare gas
+Ethanol
+A
+Which of these is not a framework for building Android application? 
+React Native
+Ionic
+Phonegap
+Kotlin
+D
+Which of these is not a metal? 
+Calcium
+Aluminium
+Argon
+Sodium
+C
+Chai is a tool used for? 
+Testing
+Module bundling
+Designing
+Data Science
+A
+Which is not used for module bundling and task running? 
+Webpack
+Mocha
+Gulp
+Grunt
+B
+Tkinter is a python library used for?
+Artificial Intelligence
+Machine Learning
+Desktop development
+Mobile development
+C
+Golang was created at?
+Facebook
+Zeit
+Microsoft
+Google
+D
+Scrapy is a framework used for?
+Web crawling
+Game development
+Network sniffing
+Web development
+A
+Nodejs is usually known for its? 
+ASpeed
+Efficiency
+Simplicity
+Asyncronousity
+D
+The largest planet is? 
+Saturn
+Jupiter
+Earth
+Uranium
+B

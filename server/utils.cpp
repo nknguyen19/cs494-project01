@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <iostream>
+#include <time.h>
 
 using namespace std;
 
@@ -46,4 +47,10 @@ string parseMessageContent(string message)
 		i++;
 	}
 	return content;
+}
+
+int random(int min, int max)
+{
+	srand(time(NULL));
+	return rand() % (max - min + 1) + min;
 }
