@@ -5,6 +5,9 @@
 #include "player.h"
 #include "client.h"
 #include "registerframe.h"
+#include <wx/socket.h>
+
+#define PORT 54000
 
 
 class MyApp : public wxApp
@@ -12,8 +15,13 @@ class MyApp : public wxApp
 private: 
     int state;
     Player *player;
+    wxSocketClient *client;
+
 public:
     virtual bool OnInit();
+    void connectSerever();
+    void sendMessage(string message);
+    string receiveMessage();
 };
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
