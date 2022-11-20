@@ -60,7 +60,7 @@ Server::Server(): max_clients(30), client_socket(vector<int>(30))
 	//try to specify maximum of 3 pending connections for the master socket
 	if (listen(master_socket, 3) < 0)
 	{
-		perror("listen");
+		// perror("listen");
 		exit(EXIT_FAILURE);
 	}
 }
@@ -181,13 +181,8 @@ void Server::run()
 	}
 }
 
-void Server::executeCommand(string message, int client_socket)
+void Server::registerPlayer(int client_socket, string content)
 {
-	string command = parseMessageCommand(message);
-	string content = parseMessageContent(message);
-
-	if (command == "REGISTER")
-	{
 		// validate nickname
 		if (!validateNickname(content))
 		{
@@ -195,10 +190,12 @@ void Server::executeCommand(string message, int client_socket)
 			send(client_socket, message.c_str(), message.length(), 0);
 			return;
 		}
+
+		// check if nickname is already taken
 		bool isNicknameExist = false;
 		for (auto game: games)
 		{	
-			if (game.isNicknameExist(content))
+			if (game->isNicknameExist(content))
 			{
 				isNicknameExist = true;
 				break;
@@ -213,29 +210,50 @@ void Server::executeCommand(string message, int client_socket)
 
 		// register nickname
 		bool hasJoinedGame = false;
+		Player* player = new Player(client_socket, content);
+
 		for (auto game: games)
 		{
-			Player player(client_socket, content);
-			if (game.addPlayer(player))
+			if (game->addPlayer(player))
 			{
 				hasJoinedGame = true;
 				break;
 			}
 		}
+		// if no game is available, create a new game
 		if (!hasJoinedGame)
 		{
-			Game game;
-			Player player(client_socket, content);
-			game.addPlayer(player);
+			Game* game = new Game();
 			games.push_back(game);
+			game->addPlayer(player);
 		}
+
+		// send success message
 		string message = "200 Nickname registered successfully.\n";
 		send(client_socket, message.c_str(), message.length(), 0);
-		return;
+}
+
+void Server::executeCommand(string message, int client_socket)
+{
+	string command = parseMessageCommand(message);
+	string content = parseMessageContent(message);
+
+	if (command == "REGISTER")
+	{
+		registerPlayer(client_socket, content);
 	}
 	else
 	{
 		cout << "Invalid command" << endl;
 		send(client_socket, "404 Invalid command\n", 20, 0);
+	}
+
+	// all games have to send the message to all players
+	for (auto game: games)
+	{
+		if (game->isPlaying())
+		{
+			game->notifyAllPlayers();
+		}
 	}
 }

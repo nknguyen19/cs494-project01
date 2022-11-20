@@ -3,6 +3,7 @@
 #include <fstream>
 #include "utils.h"
 #include <algorithm>
+#include <sys/socket.h>
 
 using namespace std;
 
@@ -16,7 +17,6 @@ Game::Game()
 {
     this->currentNumberOfPlayers = 0;
     this->maxNumberOfPlayers = 2;
-    this->currentQuestionIndex = 0;
     this->state = WAITING;
 }
 
@@ -28,7 +28,7 @@ bool Game::isNicknameExist(string nickname)
 {
     for (auto player: players)
     {
-        if (player.getNickname() == nickname)
+        if (player->getNickname() == nickname)
         {
             return true;
         }
@@ -36,24 +36,32 @@ bool Game::isNicknameExist(string nickname)
     return false;
 }
 
-bool Game::addPlayer(Player player)
+bool Game::addPlayer(Player* player)
 {
     if (this->currentNumberOfPlayers < this->maxNumberOfPlayers)
     {
         this->players.push_back(player);
         this->currentNumberOfPlayers++;
 
-
         if (this->currentNumberOfPlayers == this->maxNumberOfPlayers)
         {
-            this->state = PLAYING;
-            initQuestions();
+            // Game is full, start playing
+            this->startGame();
         }
 
         return true;
     }
 
     return false;
+}
+
+void Game::startGame()
+{
+    initQuestions();
+    this->state = PLAYING;
+    this->currentPlayingPlayerIndex = 0;
+    this->currentQuestionIndex = 0;
+    players[this->currentPlayingPlayerIndex]->setStatus(Player::INTURN);
 }
 
 void Game::initQuestions() {
@@ -98,10 +106,40 @@ void Game::initQuestions() {
         file.clear();
         file.seekg(0, ios::beg);
         getline(file, line);
-
-        Question questionObj(question, choices, answer);
+        Question* questionObj = new Question(question, choices, answer);
         questions.push_back(questionObj);
     }
 
     file.close();
+}
+
+string Game::getGameStatus()
+{
+    string gameStatus = "";
+    gameStatus += to_string(this->state) + "\n";
+    gameStatus += to_string(this->currentNumberOfPlayers) + "\n";
+    gameStatus += to_string(this->maxNumberOfPlayers) + "\n";
+    for (auto player: players)
+    {
+        gameStatus += player->getNickname() + 
+                        " " + to_string(player->getStatus()) + 
+                        " " + to_string(player->getCanMoveTurn()) +
+                        "\n";
+    }
+    if (this->state == PLAYING)
+    {
+        gameStatus += this->questions[this->currentQuestionIndex]->getQuestion() + "\n";
+    }
+    return gameStatus;
+}
+
+void Game::notifyAllPlayers() {
+    string gameStatus = this->getGameStatus();
+    for (auto player: players) {
+        send(player->getSocket(), gameStatus.c_str(), gameStatus.length(), 0);
+    }
+}
+
+bool Game::isPlaying() {
+    return this->state != WAITING;
 }

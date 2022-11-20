@@ -14,10 +14,11 @@ private:
     char answer;
 
 public:
-    Question(string question, vector<string> choices, char answer);
+    Question(string question, vector<string>& choices, char answer);
     ~Question();
 
     bool isCorrect(char answer);
+    string getQuestion();
     void print();
 };
 

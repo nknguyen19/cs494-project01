@@ -1,7 +1,7 @@
 #include "question.h"
 #include <iostream>
 
-Question::Question(string question, vector<string> choices, char answer)
+Question::Question(string question, vector<string>& choices, char answer)
 {
     this->question = question;
     this->choices = choices;
@@ -24,4 +24,14 @@ void Question::print()
     {
         cout << (char)(i + 'A') << ". " << this->choices[i] << endl;
     }
+}
+
+string Question::getQuestion()
+{      
+    string question = this->question + "\n";
+    for (int i = 0; i < this->choices.size(); i++)
+    {
+        question += this->choices[i] + "\n";
+    }
+    return question;
 }

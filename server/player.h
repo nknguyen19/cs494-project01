@@ -11,6 +11,7 @@ private:
     int socket;
     string nickname;
     int status;
+    int canMoveTurn;
 
 public:
     Player(int socket, string name);
@@ -20,6 +21,7 @@ public:
     string getNickname();
     int getStatus();
     void setStatus(int status);
+    int getCanMoveTurn();
 
     static int INTURN;
     static int WAITING;
