@@ -38,6 +38,7 @@ void Client::run(){
     // Do-while loop to send and receive data
     do {
         // Prompt the user for some text
+        // ui->render()
         cout << "> ";
         getline(cin, userInput);
 
