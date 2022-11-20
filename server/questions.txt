@@ -17,7 +17,7 @@ Modernizr
 Bootstrap
 Sass
 C
-question: Which language is closer to the hardware? 
+Which language is closer to the hardware? 
 Python
 Hash
 C++
