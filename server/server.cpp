@@ -126,12 +126,12 @@ void Server::run()
 				<< ", port : " 
 				<< ntohs(address.sin_port) << endl;
 
-			// send new connection greeting message
-			string message = "Welcome to the server. Type your name and press enter to continue.\n";
-			if (send(new_socket, message.c_str(), message.length(), 0) != message.length())
-			{
-				perror("send");
-			}
+			// // send new connection greeting message
+			// string message = "Welcome to the server. Type your name and press enter to continue.";
+			// if (send(new_socket, message.c_str(), message.length(), 0) != message.length())
+			// {
+			// 	perror("send");
+			// }
 
 			// add new socket to array of sockets
 			for (int i = 0; i < max_clients; i++)
@@ -174,6 +174,7 @@ void Server::run()
 				{
 					// set the string terminating NULL byte on the end of the data read
 					// buffer[valread] = '\0';
+					cout << "Message received: " << buffer << endl;
 					executeCommand(string(buffer), sd);
 				}
 			}

@@ -123,8 +123,8 @@ string Game::getGameStatus()
     for (auto player: players)
     {
         gameStatus += player->getNickname() + 
-                        " " + to_string(player->getStatus()) + 
-                        " " + to_string(player->getCanMoveTurn()) +
+                        "\n" + to_string(player->getStatus()) + 
+                        "\n" + to_string(player->getCanMoveTurn()) +
                         "\n";
     }
     if (this->state == PLAYING)

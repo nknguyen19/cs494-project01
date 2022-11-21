@@ -58,9 +58,13 @@ public:
     *   <game state>
     *   <number of players>
     *   <max number of players>
-    *   <player 1 nickname> <player 1 status> <player 1 can move turn>
+    *   <player 1 nickname> 
+    *   <player 1 status>
+    *   <player 1 can move turn>
     *   ...
-    *   <player n nickname> <player n status> <player n can move turn>
+    *   <player n nickname>
+    *   <player n status>
+    *   <player n can move turn>
     *   <current question>
     *   <option A>
     *   <option B>
