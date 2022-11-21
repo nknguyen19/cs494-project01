@@ -17,6 +17,7 @@ private:
     int currentQuestionIndex;
     int state;
     int currentPlayingPlayerIndex;
+    int numberOfInGamePlayers;
     // int previousResult;
 
 public:
@@ -78,6 +79,22 @@ public:
     * Return true if the game is started
     */
     bool isPlaying();
+
+    /*
+    * Return the current number of players in this game
+    */
+    int getCurrentNumberOfPlayers();
+
+    /*
+    * Return the current status of a player
+    */
+    int getPlayerStatus(int player_id);
+
+    /**
+    * Return true if the answer is correct.
+    * Note that the whole game state after checking answer is also changed.
+    */
+    bool submitAnswer(char answer);
 
 
     static int WAITING;

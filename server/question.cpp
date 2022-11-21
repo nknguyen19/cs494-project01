@@ -1,5 +1,6 @@
 #include "question.h"
 #include <iostream>
+#include <cctype>
 
 Question::Question(string question, vector<string>& choices, char answer)
 {
@@ -14,7 +15,7 @@ Question::~Question()
 
 bool Question::isCorrect(char answer)
 {
-    return this->answer == answer;
+    return toupper(this->answer) == answer;
 }
 
 void Question::print()
