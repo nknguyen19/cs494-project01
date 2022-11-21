@@ -174,6 +174,7 @@ void Server::run()
 				{
 					// set the string terminating NULL byte on the end of the data read
 					// buffer[valread] = '\0';
+					cout << "Message received: " << buffer << endl;
 					executeCommand(string(buffer), sd);
 				}
 			}

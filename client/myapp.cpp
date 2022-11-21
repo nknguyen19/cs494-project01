@@ -6,7 +6,8 @@ using namespace std;
 bool MyApp::OnInit()
 {
     connectSerever();
-    MyFrame *frame = new MyFrame();
+    MyFrame *frame = new MyFrame(this->client);
+    frame->SetSize(500, 250);
     frame->Show(true);
     return true;
 }
@@ -28,12 +29,8 @@ void MyApp::connectSerever()
     client->Connect(addr, false);
 
     // wait for connection
-    client->WaitOnConnect();
+    // client->WaitOnConnect();
 
-    // send message
-    client->Write("Hello, world!", 13);
-    cout << "send message" << endl;
-    
     // read response
     char buffer[1024];
     client->Read(buffer, 1024);

@@ -4,7 +4,7 @@
 #endif
 #include "player.h"
 #include "client.h"
-#include "registerframe.h"
+#include "myframe.h"
 #include <wx/socket.h>
 
 #define PORT 54000
