@@ -22,6 +22,7 @@ public:
     int getStatus();
     void setStatus(int status);
     int getCanMoveTurn();
+    void decreaseCanMoveTurn();
 
     static int INTURN;
     static int WAITING;

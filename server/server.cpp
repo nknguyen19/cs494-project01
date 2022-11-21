@@ -250,6 +250,8 @@ void Server::executeCommand(string message, int client_socket)
 	}
 	else if (command == "ANSWER")
 		handleAnswerRequest(client_socket, content);
+	else if (command == "MOVE")
+		handleMoveRequest(client_socket);
 	else
 	{
 		cout << "Invalid command" << endl;
@@ -257,26 +259,40 @@ void Server::executeCommand(string message, int client_socket)
 	}
 }
 
-void Server::handleAnswerRequest(int client_socket, string answer) {
-	if (!player_id.count(client_socket))
+bool Server::handleInGameRequest(int client_socket) {
+	if (!player_id.count(client_socket)) {
 		send(
 			client_socket,
 			"400 You must register first.\n",
 			29, 0
 		);
-	else if (!games[player_id[client_socket].first]->isPlaying())
+		return false;
+	}
+	else if (!games[player_id[client_socket].first]->isPlaying()) {
 		send(
 			client_socket,
 			"400 The game has not started.\n",
 			30, 0
 		);
-	else if (games[player_id[client_socket].first]->getPlayerStatus(player_id[client_socket].second) != Player::INTURN)
+		return false;
+	}
+	else if (games[player_id[client_socket].first]->getPlayerStatus(player_id[client_socket].second) != Player::INTURN) {
 		send(
 			client_socket,
 			"400 Not your turn.\n",
 			19, 0
 		);
-	else if (answer.length() != 1 || (
+		return false;
+	}
+
+	return true;
+}
+
+void Server::handleAnswerRequest(int client_socket, string answer) {
+	if (!handleInGameRequest(client_socket)) return;
+	int game_id = player_id[client_socket].first;
+
+	if (answer.length() != 1 || (
 		(answer[0] < 'A' || 'D' < answer[0]) && 
 		(answer[0] < 'a' || 'd' < answer[0])
 	))
@@ -286,7 +302,7 @@ void Server::handleAnswerRequest(int client_socket, string answer) {
 			68, 0
 		);
 	else { // 200 OK circumstances
-		if (games[player_id[client_socket].first]->submitAnswer(answer[0]))
+		if (games[game_id]->submitAnswer(answer[0]))
 			send(
 				client_socket,
 				"200 Correct answer. Continue answering.\n",
@@ -299,6 +315,27 @@ void Server::handleAnswerRequest(int client_socket, string answer) {
 				48, 0
 			);
 		
-		games[player_id[client_socket].first]->notifyAllPlayers();
+		games[game_id]->notifyAllPlayers();
 	}
+}
+
+void Server::handleMoveRequest(int client_socket) {
+	if (!handleInGameRequest(client_socket)) return;
+	int game_id = player_id[client_socket].first;
+	
+	if (games[game_id]->currentPlayerMoveTurn()) {
+		send(
+			client_socket,
+			"200 Move turn sucessfully.\n",
+			27, 0
+		);
+
+		games[game_id]->notifyAllPlayers();
+	}
+	else
+		send(
+			client_socket,
+			"400 You've already move your turn once.\n",
+			40, 0
+		);
 }

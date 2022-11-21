@@ -159,6 +159,16 @@ int Game::getPlayerStatus(int player_id) {
     else return this->players[player_id]->getStatus();
 }
 
+void Game::nextPlayer() {
+    players[currentPlayingPlayerIndex]->setStatus(Player::WAITING);
+    int next_id;
+    for (next_id = (currentPlayingPlayerIndex + 1) % currentNumberOfPlayers;
+        players[next_id]->getStatus() == Player::DISQUALIFIED;
+        next_id = (next_id + 1) % currentNumberOfPlayers
+    );
+    players[currentPlayingPlayerIndex = next_id]->setStatus(Player::INTURN);
+}
+
 bool Game::submitAnswer(char answer) {
     if (questions[currentQuestionIndex]->isCorrect(answer)) {
         ++currentQuestionIndex;
@@ -169,14 +179,15 @@ bool Game::submitAnswer(char answer) {
     
     --numberOfInGamePlayers;
     if (numberOfInGamePlayers == 1) state = Game::FINISHED;
+    nextPlayer();
+    return false;
+}
 
-    int next_id;
-    for (next_id = (currentPlayingPlayerIndex + 1) % currentNumberOfPlayers;
-        players[next_id]->getStatus() == Player::DISQUALIFIED;
-        next_id = (next_id + 1) / currentNumberOfPlayers
-    );
-    players[currentPlayingPlayerIndex]->setStatus(Player::WAITING);
-    players[currentPlayingPlayerIndex = next_id]->setStatus(Player::INTURN);
-
+bool Game::currentPlayerMoveTurn() {
+    if (players[currentPlayingPlayerIndex]->getCanMoveTurn() > 0) {
+        players[currentPlayingPlayerIndex]->decreaseCanMoveTurn();
+        nextPlayer();
+        return true;
+    }
     return false;
 }

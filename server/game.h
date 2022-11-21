@@ -90,11 +90,19 @@ public:
     */
     int getPlayerStatus(int player_id);
 
+    void nextPlayer();
+
     /**
     * Return true if the answer is correct.
     * Note that the whole game state after checking answer is also changed.
     */
     bool submitAnswer(char answer);
+
+    /**
+    * Return true if the current player can move their turn to next player.
+    * Note that the act of moving their turn is also executed.
+    */
+    bool currentPlayerMoveTurn();
 
 
     static int WAITING;

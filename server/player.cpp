@@ -37,6 +37,11 @@ int Player::getCanMoveTurn()
     return this->canMoveTurn;
 }
 
+void Player::decreaseCanMoveTurn()
+{
+    --this->canMoveTurn;
+}
+
 int Player::INTURN = 0;
 int Player::WAITING = 1;
 int Player::WON = 2;

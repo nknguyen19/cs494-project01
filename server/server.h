@@ -50,10 +50,21 @@ public:
     */
     void executeCommand(string message, int client_socket);
 
-    /*
+    /**
+    * @brief: check if the player is in the game and in their turn
+    * @return: true if the player is in the game and in their turn
+    */
+    bool handleInGameRequest(int client_socket);
+
+    /**
     * @brief: handle answer request from client
     */
     void handleAnswerRequest(int client_socket, string answer);
+
+    /**
+    * @brief: handle move request from client
+    */
+    void handleMoveRequest(int client_socket);
 };
 
 #endif
