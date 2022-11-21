@@ -35,7 +35,6 @@ void MyApp::connectSerever()
     char buffer[1024];
     client->Read(buffer, 1024);
     string response(buffer);
-    cout << response << endl;
 }
 
 void MyApp::sendMessage(string message)

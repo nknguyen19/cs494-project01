@@ -252,9 +252,6 @@ void Server::executeCommand(string message, int client_socket)
 	// all games have to send the message to all players
 	for (auto game: games)
 	{
-		if (game->isPlaying())
-		{
-			game->notifyAllPlayers();
-		}
+		game->notifyAllPlayers();
 	}
 }

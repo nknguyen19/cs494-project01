@@ -2,7 +2,6 @@
 #ifndef WX_PRECOMP
     #include <wx/wx.h>
 #endif
-#include "player.h"
 #include "client.h"
 #include "myframe.h"
 #include <wx/socket.h>
@@ -14,7 +13,6 @@ class MyApp : public wxApp
 {
 private: 
     int state;
-    Player *player;
     wxSocketClient *client;
 
 public:
