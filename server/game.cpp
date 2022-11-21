@@ -61,6 +61,7 @@ void Game::startGame()
     this->state = PLAYING;
     this->currentPlayingPlayerIndex = 0;
     this->currentQuestionIndex = 0;
+    this->numberOfInGamePlayers = this->currentNumberOfPlayers;
     players[this->currentPlayingPlayerIndex]->setStatus(Player::INTURN);
 }
 
@@ -130,6 +131,10 @@ string Game::getGameStatus()
     {
         gameStatus += this->questions[this->currentQuestionIndex]->getQuestion() + "\n";
     }
+    else if (this->state == FINISHED)
+    {
+        gameStatus += "Game finished. " + players[currentPlayingPlayerIndex]->getNickname() + " is the winner!\n";
+    }
     return gameStatus;
 }
 
@@ -142,4 +147,36 @@ void Game::notifyAllPlayers() {
 
 bool Game::isPlaying() {
     return this->state != WAITING;
+}
+
+int Game::getCurrentNumberOfPlayers() {
+    return this->currentNumberOfPlayers;
+}
+
+int Game::getPlayerStatus(int player_id) {
+    if (player_id < 0 || currentNumberOfPlayers <= player_id)
+        return -1;
+    else return this->players[player_id]->getStatus();
+}
+
+bool Game::submitAnswer(char answer) {
+    if (questions[currentQuestionIndex]->isCorrect(answer)) {
+        ++currentQuestionIndex;
+        if (currentQuestionIndex == questions.size() - 1)
+            state = Game::FINISHED;
+        return true;
+    }
+    
+    --numberOfInGamePlayers;
+    if (numberOfInGamePlayers == 1) state = Game::FINISHED;
+
+    int next_id;
+    for (next_id = (currentPlayingPlayerIndex + 1) % currentNumberOfPlayers;
+        players[next_id]->getStatus() == Player::DISQUALIFIED;
+        next_id = (next_id + 1) / currentNumberOfPlayers
+    );
+    players[currentPlayingPlayerIndex]->setStatus(Player::WAITING);
+    players[currentPlayingPlayerIndex = next_id]->setStatus(Player::INTURN);
+
+    return false;
 }

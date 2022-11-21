@@ -3,6 +3,7 @@
 
 #include <netinet/in.h>
 #include <vector>
+#include <map>
 #include "game.h"
 
 #define TRUE 1
@@ -21,6 +22,10 @@ private:
     sockaddr_in address;
     fd_set readfds;
     vector<Game*> games;
+
+    map<int, pair<int, int>> player_id;
+    // mapping client socket id to the correspond pair (game id, in game player id)
+
 public:
     Server();
     ~Server();
@@ -30,7 +35,6 @@ public:
     */
     void run();
 
-
     /*
     * @brief: add a new player to the game
     * @param: client_socket: the socket of the player, 
@@ -39,13 +43,17 @@ public:
     */
     void registerPlayer(int client_socket, string content);
 
-
     /*
     * @brief: execute the message from the client
     * @param: message: the message from the client,
     *         client_socket: the socket of the client
     */
     void executeCommand(string message, int client_socket);
+
+    /*
+    * @brief: handle answer request from client
+    */
+    void handleAnswerRequest(int client_socket, string answer);
 };
 
 #endif

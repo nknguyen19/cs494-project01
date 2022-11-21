@@ -210,14 +210,16 @@ void Server::registerPlayer(int client_socket, string content)
 		}
 
 		// register nickname
+		int game_id = -1;
 		bool hasJoinedGame = false;
 		Player* player = new Player(client_socket, content);
 
-		for (auto game: games)
+		for (int id = 0; id < games.size(); ++id)
 		{
-			if (game->addPlayer(player))
+			if (games[id]->addPlayer(player))
 			{
 				hasJoinedGame = true;
+				game_id = id;
 				break;
 			}
 		}
@@ -227,11 +229,15 @@ void Server::registerPlayer(int client_socket, string content)
 			Game* game = new Game();
 			games.push_back(game);
 			game->addPlayer(player);
+			game_id = games.size() - 1;
 		}
+
+		player_id[client_socket] = { game_id, games[game_id]->getCurrentNumberOfPlayers() - 1 };
 
 		// send success message
 		string message = "200 Nickname registered successfully.\n";
 		send(client_socket, message.c_str(), message.length(), 0);
+		if (games[game_id]->isPlaying()) games[game_id]->notifyAllPlayers();
 }
 
 void Server::executeCommand(string message, int client_socket)
@@ -243,15 +249,57 @@ void Server::executeCommand(string message, int client_socket)
 	{
 		registerPlayer(client_socket, content);
 	}
+	else if (command == "ANSWER")
+		handleAnswerRequest(client_socket, content);
 	else
 	{
 		cout << "Invalid command" << endl;
 		send(client_socket, "404 Invalid command\n", 20, 0);
 	}
+}
 
-	// all games have to send the message to all players
-	for (auto game: games)
-	{
-		game->notifyAllPlayers();
+void Server::handleAnswerRequest(int client_socket, string answer) {
+	if (!player_id.count(client_socket))
+		send(
+			client_socket,
+			"400 You must register first.\n",
+			29, 0
+		);
+	else if (!games[player_id[client_socket].first]->isPlaying())
+		send(
+			client_socket,
+			"400 The game has not started.\n",
+			30, 0
+		);
+	else if (games[player_id[client_socket].first]->getPlayerStatus(player_id[client_socket].second) != Player::INTURN)
+		send(
+			client_socket,
+			"400 Not your turn.\n",
+			19, 0
+		);
+	else if (answer.length() != 1 || (
+		(answer[0] < 'A' || 'D' < answer[0]) && 
+		(answer[0] < 'a' || 'd' < answer[0])
+	))
+		send(
+			client_socket,
+			"400 Invalid answer. Answer must be A, B, C or D (case insensitive).\n",
+			68, 0
+		);
+	else { // 200 OK circumstances
+		if (games[player_id[client_socket].first]->submitAnswer(answer[0]))
+			send(
+				client_socket,
+				"200 Correct answer. Continue answering.\n",
+				40, 0
+			);
+		else
+			send(
+				client_socket,
+				"200 Incorrect answer. You've been disqualified.\n",
+				48, 0
+			);
+		
+		games[player_id[client_socket].first]->notifyAllPlayers();
 	}
 }
