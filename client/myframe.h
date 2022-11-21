@@ -6,6 +6,9 @@
 #include <string>
 #include "game.h"
 
+#define PORT 54000
+#define OK "OK"
+
 using namespace std;
 
 class MyFrame : public wxFrame
@@ -16,20 +19,25 @@ private:
     Game *game;
 
 public:
-    MyFrame(wxSocketClient *client);
+    MyFrame();
     ~MyFrame();
 
+    bool connectServer();
     void sendMessage(string message);
     string receiveMesage();
+    string pasreMessageStatus(string message);
+    string parseMessageContent(string message);
+    string parseGameStatus(string message);
+    void clearFrame();
 
     void OnHello(wxCommandEvent &event);
     void OnExit(wxCommandEvent &event);
     void OnAbout(wxCommandEvent &event);
     void OnRegister(wxCommandEvent &event);
-    string pasreMessageStatus(string message);
-    string parseMessageContent(string message);
-    string parseGameStatus(string message);
-    void clearFrame();
+    void OnStart(wxCommandEvent &event);
+    void OnAnswer(wxCommandEvent &event);
+
+    void showGreetingsFrame();
     void showRegisterFrame();
     void showGameFrame();
     DECLARE_EVENT_TABLE();
@@ -40,6 +48,7 @@ enum
     ID_Hello = 1,
     ID_RegisterButton = 2,
     ID_UsernameTextbox = 3,
+    ID_StartButton = 4,
     ID_PlayerNickname = 10,
     ID_Question = 20,
     ID_Answer = 21,

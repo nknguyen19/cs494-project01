@@ -1,8 +1,13 @@
 #include "myframe.h"
 
-MyFrame::MyFrame(wxSocketClient *client) : wxFrame(nullptr, wxID_ANY, "Hello World")
+/*****************************************************
+ * 
+ *  Utility functions
+ * 
+ * ***************************************************/
+MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Hello World")
 {
-    this->client = client;
+    // connectServer();
     this->game = nullptr;
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
@@ -20,7 +25,7 @@ MyFrame::MyFrame(wxSocketClient *client) : wxFrame(nullptr, wxID_ANY, "Hello Wor
     SetMenuBar(menuBar);
 
     CreateStatusBar();
-    showRegisterFrame();
+    showGreetingsFrame();
 
     Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
@@ -29,6 +34,32 @@ MyFrame::MyFrame(wxSocketClient *client) : wxFrame(nullptr, wxID_ANY, "Hello Wor
 
 MyFrame::~MyFrame()
 {
+}
+
+bool MyFrame::connectServer()
+{
+    client = new wxSocketClient();
+
+    // set event handler
+    client->SetEventHandler(*this);
+    client->SetNotify(wxSOCKET_CONNECTION_FLAG | wxSOCKET_INPUT_FLAG | wxSOCKET_LOST_FLAG);
+    client->Notify(true);
+
+    // connect to server
+    wxIPV4address addr;
+    addr.Hostname("localhost");
+    addr.Service(PORT);
+    client->Connect(addr, false);
+    string result = receiveMesage();
+    if (result == OK)
+    {
+        return true;
+    }
+    else
+    {
+        wxLogMessage("Failed to connect to server");
+        return false;
+    }
 }
 
 void MyFrame::sendMessage(string message)
@@ -44,6 +75,36 @@ string MyFrame::receiveMesage()
     return string(buffer, res);
 }
 
+
+string MyFrame::pasreMessageStatus(string message)
+{
+    return message.substr(0, 3);
+}
+
+string MyFrame::parseMessageContent(string message)
+{
+    return message.substr(4, message.length() - 4);
+}
+
+string MyFrame::parseGameStatus(string message)
+{
+    return message.substr(0, 1);
+}
+
+void MyFrame::clearFrame()
+{
+    for (wxControl *control : controls)
+    {
+        control->Destroy();
+    }
+    controls.clear();
+}
+
+/******************************************************
+ * 
+ *  Event Handler
+ * 
+ ******************************************************/
 void MyFrame::OnExit(wxCommandEvent &event)
 {
     Close(true);
@@ -89,28 +150,29 @@ void MyFrame::OnRegister(wxCommandEvent &event)
     }
 }
 
-string MyFrame::pasreMessageStatus(string message)
+void MyFrame::OnStart(wxCommandEvent &event)
 {
-    return message.substr(0, 3);
-}
-
-string MyFrame::parseMessageContent(string message)
-{
-    return message.substr(4, message.length() - 4);
-}
-
-string MyFrame::parseGameStatus(string message)
-{
-    return message.substr(0, 1);
-}
-
-void MyFrame::clearFrame()
-{
-    for (wxControl *control : controls)
+    if (this->connectServer())
     {
-        control->Destroy();
+        this->showRegisterFrame();
     }
-    controls.clear();
+}
+
+
+/******************************************************
+ * 
+ *  Show Frame
+ * 
+ ******************************************************/
+
+void MyFrame::showGreetingsFrame()
+{
+    clearFrame();
+    wxStaticText *helloText = new wxStaticText(this, ID_Hello, "Hello, ", wxPoint(10, 10), wxSize(100, 20));
+    controls.push_back(helloText);
+    wxButton *startButton = new wxButton(this, ID_StartButton, "Start", wxPoint(10, 40), wxSize(100, 20));
+    controls.push_back(startButton);
+    Bind(wxEVT_BUTTON, &MyFrame::OnStart, this, ID_StartButton);
 }
 
 void MyFrame::showRegisterFrame()
@@ -149,7 +211,7 @@ void MyFrame::showGameFrame()
         {
             wxButton *answer_button = new wxButton(this, ID_Answer + i, answers[i], wxPoint(200, 100 + 50 * i), wxSize(500, 50));
             controls.push_back(answer_button);
-            // Bind(wxEVT_BUTTON, &MyFrame::OnAnswer, this, ID_AnswerButton + i);
+            Bind(wxEVT_BUTTON, &MyFrame::OnAnswer, this, ID_Answer + i);
         }
     }
 
@@ -158,4 +220,12 @@ void MyFrame::showGameFrame()
     if (!this->game->isFinished()) {
         this->showGameFrame();
     }
+}
+
+void MyFrame::OnAnswer(wxCommandEvent &event)
+{
+    int id = event.GetId();
+    int answer = id - ID_Answer;
+    this->sendMessage("ANSWER " + string(1, char(answer + 'A')));
+    string response = this->receiveMesage();
 }

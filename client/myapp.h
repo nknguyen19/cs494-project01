@@ -14,12 +14,12 @@ class MyApp : public wxApp
 private: 
     int state;
     wxSocketClient *client;
-
+// 
 public:
     virtual bool OnInit();
-    void connectSerever();
-    void sendMessage(string message);
-    string receiveMessage();
+    // void connectSerever();
+    // void sendMessage(string message);
+    // string receiveMessage();
 };
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)

@@ -41,7 +41,7 @@ public:
     * Add a player to the game
     * Return true if the player is added successfully
     * Return false if the game is full
-    * If the game is full, the state of the game will be changed to PLAYING
+    * If the game is full, the state of the game will be changed to PLAYING 
     */
     bool addPlayer(Player* player);
 

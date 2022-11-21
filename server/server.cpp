@@ -144,6 +144,9 @@ void Server::run()
 					break;
 				}
 			}
+
+			// send new connection greeting message
+			send(new_socket, "OK", 2, 0);
 		}
 
 		// else its some IO operation on some other socket
@@ -173,7 +176,7 @@ void Server::run()
 				else
 				{
 					// set the string terminating NULL byte on the end of the data read
-					// buffer[valread] = '\0';
+					buffer[valread] = '\0';
 					cout << "Message received: " << buffer << endl;
 					executeCommand(string(buffer), sd);
 				}
@@ -237,7 +240,7 @@ void Server::registerPlayer(int client_socket, string content)
 		// send success message
 		string message = "200 Nickname registered successfully.\n";
 		send(client_socket, message.c_str(), message.length(), 0);
-		if (games[game_id]->isPlaying()) games[game_id]->notifyAllPlayers();
+		games[game_id]->notifyAllPlayers();
 }
 
 void Server::executeCommand(string message, int client_socket)
