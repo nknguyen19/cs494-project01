@@ -38,6 +38,7 @@ public:
     void OnRegister(wxCommandEvent &event);
     void OnStart(wxCommandEvent &event);
     void OnAnswer(wxCommandEvent &event);
+    void OnMoveTurn(wxCommandEvent &event);
     void handleCorrectAnswer();
     void handleWrongAnswer();
 
@@ -57,7 +58,8 @@ enum
     ID_Question = 20,
     ID_Answer = 21,
     ID_MyStatus = 30,
-    ID_Result = 31
+    ID_Result = 31,
+    ID_MoveButton = 32
 };
 
 #endif

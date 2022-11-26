@@ -141,6 +141,11 @@ void MyFrame::OnRegister(wxCommandEvent &event)
         this->game = new Game(string(username));
         // TODO : Show game frame
         response = response.substr(response.find_first_of("\n") + 1);
+        if (response.length() == 0)
+        {
+            // not sure sometimes game status is not sent along with the previous message
+            response = this->receiveMesage();
+        }
         this->game->update(response);
         this->showGameFrame();
     }
@@ -197,9 +202,17 @@ void MyFrame::showGameFrame()
                                                     ID_MyStatus, 
                                                     this->game->isWaiting() ? "Waiting for other player" :
                                                     (this->game->getIsMyTurn() ? "Your turn" : (currentPlayingPlayer + "'s turn")),
-                                                    wxPoint(10, 10), 
-                                                    wxSize(100, 50));
+                                                    wxPoint(250, 50), 
+                                                    wxSize(200, 50));
         controls.push_back(myStatusText);
+
+        // display move turn button
+        if (this->game->getMyPlayer().canMoveTurn)
+        {
+            wxButton *moveButton = new wxButton(this, ID_MoveButton, "Move", wxPoint(650, 30), wxSize(100, 50));
+            controls.push_back(moveButton);
+            Bind(wxEVT_BUTTON, &MyFrame::OnMoveTurn, this, ID_MoveButton);
+        }
     }
 
     // display players
@@ -207,21 +220,21 @@ void MyFrame::showGameFrame()
     for (int i = 0; i < players.size(); i++)
     {
         Player *player = players[i];
-        wxStaticText *player_name = new wxStaticText(this, ID_PlayerNickname, player->nickname, wxPoint(50, 50 + 50 * i), wxSize(100, 50));
+        wxStaticText *player_name = new wxStaticText(this, ID_PlayerNickname, player->nickname, wxPoint(100, 150 + 50 * i), wxSize(100, 50));
         controls.push_back(player_name);
     }
 
     if (this->game->isPlaying()) {
         // display question
         Question *question = this->game->getCurrentQuestion();
-        wxStaticText *question_text = new wxStaticText(this, ID_Question, question->question, wxPoint(200, 50), wxSize(500, 50));
+        wxStaticText *question_text = new wxStaticText(this, ID_Question, question->question, wxPoint(250, 150), wxSize(500, 50));
         controls.push_back(question_text);
 
         // display answers
         vector<string> answers = question->answers;
         for (int i = 0; i < answers.size(); i++)
         {
-            wxButton *answer_button = new wxButton(this, ID_Answer + i, answers[i], wxPoint(200, 100 + 50 * i), wxSize(500, 50));
+            wxButton *answer_button = new wxButton(this, ID_Answer + i, answers[i], wxPoint(250, 200 + 50 * i), wxSize(500, 50));
             controls.push_back(answer_button);
             Bind(wxEVT_BUTTON, &MyFrame::OnAnswer, this, ID_Answer + i);
         }
@@ -240,6 +253,18 @@ void MyFrame::showGameFrame()
 
 void MyFrame::OnAnswer(wxCommandEvent &event)
 {
+    if (!this->game->getIsMyTurn()) {
+        wxLogMessage("It's not your turn");
+        return;
+    }
+    if (this->game->isFinished()) {
+        wxLogMessage("Game is finished");
+        return;
+    }
+    if (this->game->isEliminated()) {
+        wxLogMessage("You are eliminated");
+        return;
+    }
     int id = event.GetId();
     int answer = id - ID_Answer;
     this->sendMessage("ANSWER " + string(1, char(answer + 'A')));
@@ -249,6 +274,10 @@ void MyFrame::OnAnswer(wxCommandEvent &event)
     string status = this->pasreMessageStatus(response);
     string content = this->parseMessageContent(response);
     string game_status = response.substr(response.find_first_of("\n") + 1);
+    if (game_status.length() == 0) {
+        game_status = this->receiveMesage();
+    }
+    this->game->update(game_status);
     this->game->update(game_status);
     if (status == "200") {
         if (content == CORRECT) {
@@ -258,6 +287,38 @@ void MyFrame::OnAnswer(wxCommandEvent &event)
             this->handleWrongAnswer();
         }
         this->showGameFrame();
+    }
+    else {
+        wxLogMessage(content.c_str());
+    }
+}
+
+void MyFrame::OnMoveTurn(wxCommandEvent &event)
+{
+    if (!this->game->getIsMyTurn()) {
+        wxLogMessage("It's not your turn");
+        return;
+    }
+    if (this->game->isFinished()) {
+        wxLogMessage("Game is finished");
+        return;
+    }
+    if (this->game->isEliminated()) {
+        wxLogMessage("You are eliminated");
+        return;
+    }
+    this->sendMessage("MOVE");
+    string response = this->receiveMesage();
+    string status = this->pasreMessageStatus(response);
+    string content = this->parseMessageContent(response);
+    string game_status = response.substr(response.find_first_of("\n") + 1);
+    if (game_status.length() == 0) {
+        game_status = this->receiveMesage();
+    }
+    this->game->update(game_status);
+    if (status == "200") {
+        this->showGameFrame();
+        wxLogStatus("Moved your turn!");
     }
     else {
         wxLogMessage(content.c_str());

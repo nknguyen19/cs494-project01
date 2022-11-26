@@ -32,66 +32,71 @@ Game::~Game()
 void Game::update(string gameStatus)
 {
     // get line by line from gameStatus and update game
+    try {
     string line;
-    istringstream f(gameStatus);
-    int status, numberOfPlayers, maxNumberOfPlayers;
-    vector<Player*> players;
-    Question *currentQuestion;
+        istringstream f(gameStatus);
+        int status, numberOfPlayers, maxNumberOfPlayers;
+        vector<Player*> players;
+        Question *currentQuestion;
 
-    // get game status
-    getline(f, line); 
-    status = stoi(line);
-    this->status = status;
-
-    // get number of players
-    getline(f, line);
-    numberOfPlayers = stoi(line);
-    this->numberOfPlayers = numberOfPlayers;
-
-    // get max number of players
-    getline(f, line);
-    maxNumberOfPlayers = stoi(line);
-    this->maxNumberOfPlayers = maxNumberOfPlayers;
-
-    // get players
-    for (int i = 0; i < numberOfPlayers; i++) {
+        // get game status
         getline(f, line);
-        string nickname = line;
+        status = stoi(line);
+        this->status = status;
 
+        // get number of players
         getline(f, line);
-        int status = stoi(line);
-        if (nickname == this->myNickname) {
-            if (status == PLAYER_INTURN) {
-                this->isMyTurn = true;
-            } else {
-                this->isMyTurn = false;
+        numberOfPlayers = stoi(line);
+        this->numberOfPlayers = numberOfPlayers;
+
+        // get max number of players
+        getline(f, line);
+        maxNumberOfPlayers = stoi(line);
+        this->maxNumberOfPlayers = maxNumberOfPlayers;
+
+        // get players
+        for (int i = 0; i < numberOfPlayers; i++) {
+            getline(f, line);
+            string nickname = line;
+
+            getline(f, line);
+            int status = stoi(line);
+            if (nickname == this->myNickname) {
+                if (status == PLAYER_INTURN) {
+                    this->isMyTurn = true;
+                } else {
+                    this->isMyTurn = false;
+                }
+            }
+
+            getline(f, line);
+            int canMoveTurn = stoi(line);
+            players.push_back(new Player(nickname, canMoveTurn, status));
+
+            if (status == PLAYER_WON) {
+                this->winner = nickname;
             }
         }
+        this->players = players;
 
-        getline(f, line);
-        int canMoveTurn = stoi(line);
-        players.push_back(new Player(nickname, canMoveTurn, status));
-
-        if (status == PLAYER_WON) {
-            this->winner = nickname;
-        }
-    }
-    this->players = players;
-
-    if (status == GAME_PLAYING) {
-        // get question
-        getline(f, line);
-        string question = line;
-
-        // get answers
-        vector<string> answers;
-        for (int i = 0; i < 4; i++) {
+        if (status == GAME_PLAYING) {
+            // get question
             getline(f, line);
-            answers.push_back(line);
+            string question = line;
+
+            // get answers
+            vector<string> answers;
+            for (int i = 0; i < 4; i++) {
+                getline(f, line);
+                answers.push_back(line);
+            }
+            currentQuestion = new Question(question, answers);
+            this->currentQuestion = currentQuestion;
         }
-        currentQuestion = new Question(question, answers);
-        this->currentQuestion = currentQuestion;
+    } catch (exception e) {
+        cout << "Error while parsing game status" << endl;
     }
+    
 }
 
 vector<Player*> Game::getPlayers()

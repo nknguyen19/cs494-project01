@@ -16,7 +16,7 @@ int Game::FINISHED = 2;
 Game::Game()
 {
     this->currentNumberOfPlayers = 0;
-    this->maxNumberOfPlayers = 2;
+    this->maxNumberOfPlayers = 3;
     this->state = WAITING;
 }
 
@@ -131,10 +131,7 @@ string Game::getGameStatus()
     {
         gameStatus += this->questions[this->currentQuestionIndex]->getQuestion() + "\n";
     }
-    // else if (this->state == FINISHED)
-    // {
-    //     gameStatus += "Game finished. " + players[currentPlayingPlayerIndex]->getNickname() + " is the winner!\n";
-    // }
+
     return gameStatus;
 }
 
@@ -164,13 +161,14 @@ int Game::getPlayerStatus(int player_id) {
 }
 
 void Game::nextPlayer() {
-    players[currentPlayingPlayerIndex]->setStatus(Player::WAITING);
+    // players[currentPlayingPlayerIndex]->setStatus(Player::WAITING);
     int next_id;
     for (next_id = (currentPlayingPlayerIndex + 1) % currentNumberOfPlayers;
         players[next_id]->getStatus() == Player::DISQUALIFIED;
         next_id = (next_id + 1) % currentNumberOfPlayers
     );
     players[next_id]->setStatus(Player::INTURN);
+    currentPlayingPlayerIndex = next_id;
 }
 
 bool Game::submitAnswer(char answer) {
@@ -203,6 +201,7 @@ bool Game::submitAnswer(char answer) {
 bool Game::currentPlayerMoveTurn() {
     if (players[currentPlayingPlayerIndex]->getCanMoveTurn() > 0) {
         players[currentPlayingPlayerIndex]->decreaseCanMoveTurn();
+        players[currentPlayingPlayerIndex]->setStatus(Player::WAITING);
         nextPlayer();
         return true;
     }

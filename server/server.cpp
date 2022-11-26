@@ -293,7 +293,7 @@ void Server::handleMoveRequest(int client_socket) {
 		if (games[game_id]->currentPlayerMoveTurn() == 0)
 			throw("400 You've already move your turn once.\n");
 
-		string message = "200 OK";
+		string message = "200 OK\n";
 		send(client_socket, message.c_str(), message.length(), 0);
 		games[game_id]->notifyAllPlayers();
 	} catch (const char* message) {
