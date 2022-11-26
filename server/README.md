@@ -28,8 +28,8 @@ ANSWER <answer_option>
 
 #### Response Formats
 ```
-200 Correct answer.
-200 Incorrect answer. You've been disqualified.
+200 CORRECT.
+200 INCORRECT.
 400 Invalid answer. Answer must be A, B, C or D (case insensitive).
 ```
 
@@ -41,7 +41,7 @@ Note that whatever value comes after MOVE command code will be ignored.
 
 #### Response Formats
 ```
-200 Move turn sucessfully.
+200 OK.
 400 You've already move your turn once.
 ```
 
