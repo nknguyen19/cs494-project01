@@ -9,10 +9,12 @@ using namespace std;
 struct Player {
     string nickname;
     int canMoveTurn;
+    int status;
     
-    Player(string nickname, int canMoveTurn) {
+    Player(string nickname, int canMoveTurn, int status) {
         this->nickname = nickname;
         this->canMoveTurn = canMoveTurn;
+        this->status = status;
     }
 };
 
@@ -36,6 +38,7 @@ private:
     int maxNumberOfPlayers;
     Question *currentQuestion;
     string myNickname;
+    string winner;
 
 public:
     Game(string myNickname);
@@ -52,6 +55,11 @@ public:
     bool isPlaying();
     bool isWaiting();
     bool isFinished();
+    string getWinner();
+    Player getCurrentPlayingPlayer();
+    Player getMyPlayer();
+    string getResult();
+    bool isEliminated();
 
     static int GAME_WAITING;
     static int GAME_PLAYING;

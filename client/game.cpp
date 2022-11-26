@@ -70,7 +70,11 @@ void Game::update(string gameStatus)
 
         getline(f, line);
         int canMoveTurn = stoi(line);
-        players.push_back(new Player(nickname, canMoveTurn));
+        players.push_back(new Player(nickname, canMoveTurn, status));
+
+        if (status == PLAYER_WON) {
+            this->winner = nickname;
+        }
     }
     this->players = players;
 
@@ -138,4 +142,39 @@ bool Game::isWaiting()
 bool Game::isFinished()
 {
     return this->status == GAME_FINISHED;
+}
+
+string Game::getWinner()
+{
+    return this->winner;
+}
+
+Player Game::getCurrentPlayingPlayer()
+{
+    for (int i = 0; i < this->players.size(); i++) {
+        if (this->players[i]->status == PLAYER_INTURN) {
+            return *this->players[i];
+        }
+    }
+    return *this->players[0];
+}
+
+Player Game::getMyPlayer()
+{
+    for (int i = 0; i < this->players.size(); i++) {
+        if (this->players[i]->nickname == this->myNickname) {
+            return *this->players[i];
+        }
+    }
+    return *this->players[0];
+}
+
+string Game::getResult()
+{
+    return this->getWinner() == this->getMyNickname() ? "You won!" : ("You lost! The winner is " + this->getWinner());
+}
+
+bool Game::isEliminated()
+{
+    return this->getMyPlayer().status == PLAYER_DISQUALIFIED;
 }

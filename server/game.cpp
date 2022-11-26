@@ -131,10 +131,10 @@ string Game::getGameStatus()
     {
         gameStatus += this->questions[this->currentQuestionIndex]->getQuestion() + "\n";
     }
-    else if (this->state == FINISHED)
-    {
-        gameStatus += "Game finished. " + players[currentPlayingPlayerIndex]->getNickname() + " is the winner!\n";
-    }
+    // else if (this->state == FINISHED)
+    // {
+    //     gameStatus += "Game finished. " + players[currentPlayingPlayerIndex]->getNickname() + " is the winner!\n";
+    // }
     return gameStatus;
 }
 
@@ -170,20 +170,33 @@ void Game::nextPlayer() {
         players[next_id]->getStatus() == Player::DISQUALIFIED;
         next_id = (next_id + 1) % currentNumberOfPlayers
     );
-    players[currentPlayingPlayerIndex = next_id]->setStatus(Player::INTURN);
+    players[next_id]->setStatus(Player::INTURN);
 }
 
 bool Game::submitAnswer(char answer) {
     if (questions[currentQuestionIndex]->isCorrect(answer)) {
         ++currentQuestionIndex;
-        if (currentQuestionIndex == questions.size() - 1)
+        if (currentQuestionIndex == questions.size() - 1){
             state = Game::FINISHED;
+            players[currentPlayingPlayerIndex]->setStatus(Player::WON);
+        }
         return true;
     }
     
     --numberOfInGamePlayers;
-    if (numberOfInGamePlayers == 1) state = Game::FINISHED;
-    nextPlayer();
+    players[currentPlayingPlayerIndex]->setStatus(Player::DISQUALIFIED);
+    if (numberOfInGamePlayers == 1) {
+        state = Game::FINISHED;
+        for (auto player: players) {
+            if (player->getStatus() != Player::DISQUALIFIED) {
+                player->setStatus(Player::WON);
+                break;
+            }
+        }
+    }
+    else {
+        nextPlayer();
+    }
     return false;
 }
 

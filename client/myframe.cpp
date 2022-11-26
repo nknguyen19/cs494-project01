@@ -83,7 +83,7 @@ string MyFrame::pasreMessageStatus(string message)
 
 string MyFrame::parseMessageContent(string message)
 {
-    return message.substr(4, message.length() - 4);
+    return message.substr(4, message.find_first_of("\n") - 4);
 }
 
 string MyFrame::parseGameStatus(string message)
@@ -190,6 +190,18 @@ void MyFrame::showGameFrame()
     clearFrame();
     this->SetSize(800, 600);
 
+    // display my status
+    if (!this->game->isFinished()){
+        string currentPlayingPlayer = this->game->getCurrentPlayingPlayer().nickname;
+        wxStaticText *myStatusText = new wxStaticText(this, 
+                                                    ID_MyStatus, 
+                                                    this->game->isWaiting() ? "Waiting for other player" :
+                                                    (this->game->getIsMyTurn() ? "Your turn" : (currentPlayingPlayer + "'s turn")),
+                                                    wxPoint(10, 10), 
+                                                    wxSize(100, 50));
+        controls.push_back(myStatusText);
+    }
+
     // display players
     vector<Player*> players = this->game->getPlayers();
     for (int i = 0; i < players.size(); i++)
@@ -215,11 +227,15 @@ void MyFrame::showGameFrame()
         }
     }
 
+    if (this->game->isFinished()) {
+        // display result
+        wxStaticText *result_text = new wxStaticText(this, ID_Result, this->game->getResult(), wxPoint(200, 50), wxSize(500, 50));
+        controls.push_back(result_text);
+    }
+
     string response = this->receiveMesage();
     this->game->update(response);
-    if (!this->game->isFinished()) {
-        this->showGameFrame();
-    }
+    this->showGameFrame();
 }
 
 void MyFrame::OnAnswer(wxCommandEvent &event)
@@ -228,4 +244,32 @@ void MyFrame::OnAnswer(wxCommandEvent &event)
     int answer = id - ID_Answer;
     this->sendMessage("ANSWER " + string(1, char(answer + 'A')));
     string response = this->receiveMesage();
+    
+    // Answer result
+    string status = this->pasreMessageStatus(response);
+    string content = this->parseMessageContent(response);
+    string game_status = response.substr(response.find_first_of("\n") + 1);
+    this->game->update(game_status);
+    if (status == "200") {
+        if (content == CORRECT) {
+            this->handleCorrectAnswer();
+        } 
+        else if (content == INCORRECT) {
+            this->handleWrongAnswer();
+        }
+        this->showGameFrame();
+    }
+    else {
+        wxLogMessage(content.c_str());
+    }
+}
+
+void MyFrame::handleCorrectAnswer()
+{
+    wxLogStatus("Correct answer! Continue to next question");
+}
+
+void MyFrame::handleWrongAnswer()
+{
+    wxLogStatus("Incorrect answer! You have been eliminated!");
 }

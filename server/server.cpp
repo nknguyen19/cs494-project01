@@ -275,8 +275,8 @@ void Server::handleAnswerRequest(int client_socket, string answer) {
 		
 		string message;
 		if (games[game_id]->submitAnswer(answer[0]))
-			message = "200 Correct answer.\n";
-		else message = "200 Incorrect answer. You've been disqualified.\n";
+			message = "200 CORRECT\n";
+		else message = "200 INCORRECT\n";
 		send(client_socket, message.c_str(), message.length(), 0);
 		games[game_id]->notifyAllPlayers();
 	} catch (const char* message) {
@@ -293,7 +293,7 @@ void Server::handleMoveRequest(int client_socket) {
 		if (games[game_id]->currentPlayerMoveTurn() == 0)
 			throw("400 You've already move your turn once.\n");
 
-		string message = "200 Move turn sucessfully.\n";
+		string message = "200 OK";
 		send(client_socket, message.c_str(), message.length(), 0);
 		games[game_id]->notifyAllPlayers();
 	} catch (const char* message) {
