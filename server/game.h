@@ -73,6 +73,8 @@ public:
     */
     string getGameStatus();
 
+    string getPlayerNickname(int player_id);
+
     /*
     * send mesaage to all players in the game
     */

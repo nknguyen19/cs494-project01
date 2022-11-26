@@ -9,6 +9,7 @@ REGISTER <player_nickname>
 200 Nickname registered successfully.
 400 Nickname is already taken. Please try again.
 400 Nickname is invalid. Please try again.
+400 You've already registered with the nickname <player_nickname>.
 ```
 
 ## In-Game Requests

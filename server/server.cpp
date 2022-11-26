@@ -185,47 +185,57 @@ void Server::run()
 	}
 }
 
-void Server::registerPlayer(int client_socket, string content)
+void Server::executeCommand(string message, int client_socket)
 {
-		// validate nickname
-		if (!validateNickname(content))
-		{
-			string message = "400 Nickname is invalid. Please try again.\n";
-			send(client_socket, message.c_str(), message.length(), 0);
-			return;
+	string command = parseMessageCommand(message);
+	string content = parseMessageContent(message);
+
+	if (command == "REGISTER")
+	{
+		handleRegisterRequest(client_socket, content);
+	}
+	else if (command == "ANSWER")
+		handleAnswerRequest(client_socket, content);
+	else if (command == "MOVE")
+		handleMoveRequest(client_socket);
+	else
+	{
+		cout << "Invalid command" << endl;
+		send(client_socket, "404 Invalid command\n", 20, 0);
+	}
+}
+
+void Server::handleRegisterRequest(int client_socket, string nickname) {
+	try {
+		// already registered
+		if (player_id.count(client_socket)) {
+			auto descriptor = player_id[client_socket];
+			throw("400 You've already registered in a game with the nickname "
+				+ games[descriptor.first]->getPlayerNickname(descriptor.second)
+				+ ".\n");
 		}
 
+		// validate nickname
+		if (!validateNickname(nickname))
+			throw("400 Nickname is invalid. Please try again.\n");
+
 		// check if nickname is already taken
-		bool isNicknameExist = false;
 		for (auto game: games)
-		{	
-			if (game->isNicknameExist(content))
-			{
-				isNicknameExist = true;
-				break;
-			}
-		}
-		if (isNicknameExist)
-		{
-			string message = "400 Nickname is already taken. Please try again.\n";
-			send(client_socket, message.c_str(), message.length(), 0);
-			return;
-		}
+			if (game->isNicknameExist(nickname))
+				throw("400 Nickname is already taken. Please try again.\n");
 
 		// register nickname
 		int game_id = -1;
 		bool hasJoinedGame = false;
-		Player* player = new Player(client_socket, content);
+		Player* player = new Player(client_socket, nickname);
 
 		for (int id = 0; id < games.size(); ++id)
-		{
-			if (games[id]->addPlayer(player))
-			{
+			if (games[id]->addPlayer(player)) {
 				hasJoinedGame = true;
 				game_id = id;
 				break;
 			}
-		}
+
 		// if no game is available, create a new game
 		if (!hasJoinedGame)
 		{
@@ -241,25 +251,9 @@ void Server::registerPlayer(int client_socket, string content)
 		string message = "200 Nickname registered successfully.\n";
 		send(client_socket, message.c_str(), message.length(), 0);
 		games[game_id]->notifyAllPlayers();
-}
-
-void Server::executeCommand(string message, int client_socket)
-{
-	string command = parseMessageCommand(message);
-	string content = parseMessageContent(message);
-
-	if (command == "REGISTER")
-	{
-		registerPlayer(client_socket, content);
-	}
-	else if (command == "ANSWER")
-		handleAnswerRequest(client_socket, content);
-	else if (command == "MOVE")
-		handleMoveRequest(client_socket);
-	else
-	{
-		cout << "Invalid command" << endl;
-		send(client_socket, "404 Invalid command\n", 20, 0);
+	} catch (const char* message) {
+		send(client_socket, message, strlen(message), 0);
+		return;
 	}
 }
 

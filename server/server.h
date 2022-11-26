@@ -21,6 +21,7 @@ private:
     char buffer[1025];
     sockaddr_in address;
     fd_set readfds;
+
     vector<Game*> games;
 
     map<int, pair<int, int>> player_id;
@@ -36,19 +37,19 @@ public:
     void run();
 
     /*
-    * @brief: add a new player to the game
-    * @param: client_socket: the socket of the player, 
-    *        content: the nickname registered by the player
-    * send the result message back to the client
-    */
-    void registerPlayer(int client_socket, string content);
-
-    /*
     * @brief: execute the message from the client
     * @param: message: the message from the client,
     *         client_socket: the socket of the client
     */
     void executeCommand(string message, int client_socket);
+
+    /*
+    * @brief: add a new player to the game
+    * @param: client_socket: the socket of the player, 
+    *        nickname: the nickname registered by the player
+    * send the result message back to the client
+    */
+    void handleRegisterRequest(int client_socket, string nickname);
 
     /**
     * @brief: check if the player is in the game and in their turn

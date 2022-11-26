@@ -6,7 +6,7 @@ using namespace std;
 
 bool validateNickname(string nickname)
 {
-    if (nickname.length() > 10)
+    if (nickname.length() == 0 || nickname.length() > 10)
     {
         return false;
     }

@@ -138,6 +138,10 @@ string Game::getGameStatus()
     return gameStatus;
 }
 
+string Game::getPlayerNickname(int player_id) {
+    return players[player_id]->getNickname();
+}
+
 void Game::notifyAllPlayers() {
     string gameStatus = this->getGameStatus();
     for (auto player: players) {
