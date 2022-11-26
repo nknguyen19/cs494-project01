@@ -208,12 +208,8 @@ void Server::executeCommand(string message, int client_socket)
 void Server::handleRegisterRequest(int client_socket, string nickname) {
 	try {
 		// already registered
-		if (player_id.count(client_socket)) {
-			auto descriptor = player_id[client_socket];
-			throw("400 You've already registered in a game with the nickname "
-				+ games[descriptor.first]->getPlayerNickname(descriptor.second)
-				+ ".\n");
-		}
+		if (player_id.count(client_socket))
+			throw("400 You've already registered in a game.");
 
 		// validate nickname
 		if (!validateNickname(nickname))
@@ -248,7 +244,7 @@ void Server::handleRegisterRequest(int client_socket, string nickname) {
 		player_id[client_socket] = { game_id, games[game_id]->getCurrentNumberOfPlayers() - 1 };
 
 		// send success message
-		string message = "200 Nickname registered successfully.\n";
+		string message{"200 Nickname registered successfully.\n"};
 		send(client_socket, message.c_str(), message.length(), 0);
 		games[game_id]->notifyAllPlayers();
 	} catch (const char* message) {
@@ -257,83 +253,51 @@ void Server::handleRegisterRequest(int client_socket, string nickname) {
 	}
 }
 
-bool Server::handleInGameRequest(int client_socket) {
-	if (!player_id.count(client_socket)) {
-		send(
-			client_socket,
-			"400 You must register first.\n",
-			29, 0
-		);
-		return false;
-	}
-	else if (!games[player_id[client_socket].first]->isPlaying()) {
-		send(
-			client_socket,
-			"400 The game has not started.\n",
-			30, 0
-		);
-		return false;
-	}
-	else if (games[player_id[client_socket].first]->getPlayerStatus(player_id[client_socket].second) != Player::INTURN) {
-		send(
-			client_socket,
-			"400 Not your turn.\n",
-			19, 0
-		);
-		return false;
-	}
-
-	return true;
+void Server::handleInGameRequest(int client_socket) {
+	if (!player_id.count(client_socket))
+		throw("400 You must register first.\n");
+	if (!games[player_id[client_socket].first]->isPlaying())
+		throw("400 The game has not started.\n");
+	if (games[player_id[client_socket].first]->getPlayerStatus(player_id[client_socket].second) != Player::INTURN)
+		throw("400 Not your turn.\n");
 }
 
 void Server::handleAnswerRequest(int client_socket, string answer) {
-	if (!handleInGameRequest(client_socket)) return;
-	int game_id = player_id[client_socket].first;
+	try {
+		handleInGameRequest(client_socket);
+		int game_id = player_id[client_socket].first;
 
-	if (answer.length() != 1 || (
-		(answer[0] < 'A' || 'D' < answer[0]) && 
-		(answer[0] < 'a' || 'd' < answer[0])
-	))
-		send(
-			client_socket,
-			"400 Invalid answer. Answer must be A, B, C or D (case insensitive).\n",
-			68, 0
-		);
-	else { // 200 OK circumstances
-		if (games[game_id]->submitAnswer(answer[0]))
-			send(
-				client_socket,
-				"200 Correct answer. Continue answering.\n",
-				40, 0
-			);
-		else
-			send(
-				client_socket,
-				"200 Incorrect answer. You've been disqualified.\n",
-				48, 0
-			);
+		if (answer.length() != 1 || (
+			(answer[0] < 'A' || 'D' < answer[0]) && 
+			(answer[0] < 'a' || 'd' < answer[0])
+		))
+			throw("400 Invalid answer. Answer must be A, B, C or D (case insensitive).\n");
 		
+		string message;
+		if (games[game_id]->submitAnswer(answer[0]))
+			message = "200 Correct answer.\n";
+		else message = "200 Incorrect answer. You've been disqualified.\n";
+		send(client_socket, message.c_str(), message.length(), 0);
 		games[game_id]->notifyAllPlayers();
+	} catch (const char* message) {
+		send(client_socket, message, strlen(message), 0);
+		return;
 	}
 }
 
 void Server::handleMoveRequest(int client_socket) {
-	if (!handleInGameRequest(client_socket)) return;
-	int game_id = player_id[client_socket].first;
-	
-	if (games[game_id]->currentPlayerMoveTurn()) {
-		send(
-			client_socket,
-			"200 Move turn sucessfully.\n",
-			27, 0
-		);
+	try {
+		handleInGameRequest(client_socket);
+		int game_id = player_id[client_socket].first;
+		
+		if (games[game_id]->currentPlayerMoveTurn() == 0)
+			throw("400 You've already move your turn once.\n");
 
+		string message = "200 Move turn sucessfully.\n";
+		send(client_socket, message.c_str(), message.length(), 0);
 		games[game_id]->notifyAllPlayers();
+	} catch (const char* message) {
+		send(client_socket, message, strlen(message), 0);
+		return;
 	}
-	else
-		send(
-			client_socket,
-			"400 You've already move your turn once.\n",
-			40, 0
-		);
 }

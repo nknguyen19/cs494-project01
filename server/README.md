@@ -9,7 +9,7 @@ REGISTER <player_nickname>
 200 Nickname registered successfully.
 400 Nickname is already taken. Please try again.
 400 Nickname is invalid. Please try again.
-400 You've already registered with the nickname <player_nickname>.
+400 You've already registered in a game.
 ```
 
 ## In-Game Requests
@@ -28,7 +28,7 @@ ANSWER <answer_option>
 
 #### Response Formats
 ```
-200 Correct answer. Continue answering.
+200 Correct answer.
 200 Incorrect answer. You've been disqualified.
 400 Invalid answer. Answer must be A, B, C or D (case insensitive).
 ```
