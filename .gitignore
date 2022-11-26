@@ -41,3 +41,5 @@ CMakeCache.txt
 cmake_install.cmake
 uninstall.cmake
 wx-config
+/client/client
+/server/server
