@@ -24,26 +24,34 @@ private:
 
     vector<Game*> games;
 
-    map<int, pair<int, int>> player_id;
+    map<int, pair<Game*, Player*>> player_ptr;
     // mapping client socket id to the correspond pair (game id, in game player id)
 
 public:
     Server();
     ~Server();
 
-    /*
+    /**
     * @brief: start the server
     */
     void run();
 
-    /*
+    void removeSocketMapping(int client_socket);
+    void removeGame(Game* game);
+
+    /**
+    * @brief: remove a player from ongoing game
+    */
+    void removePlayer(int client_socket);
+
+    /**
     * @brief: execute the message from the client
     * @param: message: the message from the client,
     *         client_socket: the socket of the client
     */
     void executeCommand(string message, int client_socket);
 
-    /*
+    /**
     * @brief: add a new player to the game
     * @param: client_socket: the socket of the player, 
     *        nickname: the nickname registered by the player
@@ -65,6 +73,11 @@ public:
     * @brief: handle move request from client
     */
     void handleMoveRequest(int client_socket);
+
+    /**
+    * @brief: handle logout request from client
+    */
+    void handleLogoutRequest(int client_socket);
 };
 
 #endif

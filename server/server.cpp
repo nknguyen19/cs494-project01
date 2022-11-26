@@ -67,7 +67,7 @@ Server::Server(): max_clients(30), client_socket(vector<int>(30))
 
 Server::~Server()
 {
-
+	for (Game* g: games) delete g;
 }
 
 void Server::run()
@@ -84,8 +84,8 @@ void Server::run()
 		FD_SET(master_socket, &readfds);
 		int max_sd = master_socket;
 		int sd;
-		// add child sockets to set
 
+		// add child sockets to set
 		for (int i = 0; i < max_clients; i++)
 		{
 			// socket descriptor
@@ -170,6 +170,9 @@ void Server::run()
 					// Close the socket and mark as 0 in list for reuse
 					close(sd);
 					client_socket[i] = 0;
+
+					// If he's in some game, remove him
+					removePlayer(i);
 				}
 
 				// Echo back the message that came in
@@ -185,19 +188,46 @@ void Server::run()
 	}
 }
 
+void Server::removeSocketMapping(int client_socket) {
+	if (player_ptr.count(client_socket))
+		player_ptr.erase(client_socket);
+}
+
+void Server::removeGame(Game* game) {
+	int game_id;
+	for (game_id == 0;
+		games[game_id] != game && game_id < games.size();
+		++game_id
+	);
+	if (game_id == games.size())
+		throw("500 Somehow the game this player is in does not exist.\n");
+
+	delete game;
+	games.erase(games.begin() + game_id);
+}
+
+void Server::removePlayer(int client_socket) {
+	auto p = player_ptr[client_socket];
+	this->removeSocketMapping(client_socket);
+	p.first->removePlayer(p.second);
+	if (p.first->getStatus() == Game::FINISHED
+		|| p.first->getCurrentNumberOfPlayers() == 0)
+		removeGame(p.first);
+}
+
 void Server::executeCommand(string message, int client_socket)
 {
 	string command = parseMessageCommand(message);
 	string content = parseMessageContent(message);
 
 	if (command == "REGISTER")
-	{
 		handleRegisterRequest(client_socket, content);
-	}
 	else if (command == "ANSWER")
 		handleAnswerRequest(client_socket, content);
 	else if (command == "MOVE")
 		handleMoveRequest(client_socket);
+	else if (command == "LOGOUT")
+		handleLogoutRequest(client_socket);
 	else
 	{
 		cout << "Invalid command" << endl;
@@ -208,7 +238,7 @@ void Server::executeCommand(string message, int client_socket)
 void Server::handleRegisterRequest(int client_socket, string nickname) {
 	try {
 		// already registered
-		if (player_id.count(client_socket))
+		if (player_ptr.count(client_socket))
 			throw("400 You've already registered in a game.");
 
 		// validate nickname
@@ -241,7 +271,7 @@ void Server::handleRegisterRequest(int client_socket, string nickname) {
 			game_id = games.size() - 1;
 		}
 
-		player_id[client_socket] = { game_id, games[game_id]->getCurrentNumberOfPlayers() - 1 };
+		player_ptr[client_socket] = { games[game_id], player };
 
 		// send success message
 		string message{"200 Nickname registered successfully.\n"};
@@ -254,18 +284,18 @@ void Server::handleRegisterRequest(int client_socket, string nickname) {
 }
 
 void Server::handleInGameRequest(int client_socket) {
-	if (!player_id.count(client_socket))
+	if (!player_ptr.count(client_socket))
 		throw("400 You must register first.\n");
-	if (!games[player_id[client_socket].first]->isPlaying())
+	if (!player_ptr[client_socket].first->isPlaying())
 		throw("400 The game has not started.\n");
-	if (games[player_id[client_socket].first]->getPlayerStatus(player_id[client_socket].second) != Player::INTURN)
+	if (player_ptr[client_socket].second->getStatus() != Player::INTURN)
 		throw("400 Not your turn.\n");
 }
 
 void Server::handleAnswerRequest(int client_socket, string answer) {
 	try {
 		handleInGameRequest(client_socket);
-		int game_id = player_id[client_socket].first;
+		Game* game_ptr = player_ptr[client_socket].first;
 
 		if (answer.length() != 1 || (
 			(answer[0] < 'A' || 'D' < answer[0]) && 
@@ -274,11 +304,11 @@ void Server::handleAnswerRequest(int client_socket, string answer) {
 			throw("400 Invalid answer. Answer must be A, B, C or D (case insensitive).\n");
 		
 		string message;
-		if (games[game_id]->submitAnswer(answer[0]))
+		if (game_ptr->submitAnswer(answer[0]))
 			message = "200 Correct answer.\n";
 		else message = "200 Incorrect answer. You've been disqualified.\n";
 		send(client_socket, message.c_str(), message.length(), 0);
-		games[game_id]->notifyAllPlayers();
+		game_ptr->notifyAllPlayers();
 	} catch (const char* message) {
 		send(client_socket, message, strlen(message), 0);
 		return;
@@ -288,14 +318,30 @@ void Server::handleAnswerRequest(int client_socket, string answer) {
 void Server::handleMoveRequest(int client_socket) {
 	try {
 		handleInGameRequest(client_socket);
-		int game_id = player_id[client_socket].first;
+		Game* game_ptr = player_ptr[client_socket].first;
 		
-		if (games[game_id]->currentPlayerMoveTurn() == 0)
+		if (game_ptr->currentPlayerMoveTurn() == 0)
 			throw("400 You've already move your turn once.\n");
 
 		string message = "200 Move turn sucessfully.\n";
 		send(client_socket, message.c_str(), message.length(), 0);
-		games[game_id]->notifyAllPlayers();
+		game_ptr->notifyAllPlayers();
+		if (game_ptr->getStatus() == Game::FINISHED)
+			removeGame(game_ptr);
+	} catch (const char* message) {
+		send(client_socket, message, strlen(message), 0);
+		return;
+	}
+}
+
+void Server::handleLogoutRequest(int client_socket) {
+	try {
+		if (!player_ptr.count(client_socket))
+			throw("400 You haven't registered to any game.\n");
+		
+		removePlayer(client_socket);
+		string message = "200 Logout successfully.\n";
+		send(client_socket, message.c_str(), message.length(), 0);
 	} catch (const char* message) {
 		send(client_socket, message, strlen(message), 0);
 		return;

@@ -1,4 +1,5 @@
 #include "player.h"
+#include "server.h"
 
 Player::Player(int socket, string name)
 {
@@ -10,6 +11,7 @@ Player::Player(int socket, string name)
 
 Player::~Player()
 {
+    Server::removeSocketMapping(this->socket);
 }
 
 int Player::getSocket()

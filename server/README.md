@@ -45,6 +45,18 @@ Note that whatever value comes after MOVE command code will be ignored.
 400 You've already move your turn once.
 ```
 
+### Logging Out From a Game
+```
+LOGOUT
+```
+Note that whatever value comes after MOVE command code will be ignored.
+
+#### Response Formats
+```
+200 Logout successfully.
+400 You haven't registered to any game.
+```
+
 # Server Message Formats
 ## Game State Updating
 ```

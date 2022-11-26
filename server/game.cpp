@@ -22,6 +22,8 @@ Game::Game()
 
 Game::~Game()
 {
+    for (Question* q: questions) delete q;
+    for (Player* p: players) delete p;
 }
 
 bool Game::isNicknameExist(string nickname)
@@ -177,12 +179,13 @@ bool Game::submitAnswer(char answer) {
     if (questions[currentQuestionIndex]->isCorrect(answer)) {
         ++currentQuestionIndex;
         if (currentQuestionIndex == questions.size() - 1)
-            state = Game::FINISHED;
+            this->setStatus(Game::FINISHED);
         return true;
     }
     
     --numberOfInGamePlayers;
-    if (numberOfInGamePlayers == 1) state = Game::FINISHED;
+    if (numberOfInGamePlayers == 1)
+        this->setStatus(Game::FINISHED);
     nextPlayer();
     return false;
 }
@@ -194,4 +197,41 @@ bool Game::currentPlayerMoveTurn() {
         return true;
     }
     return false;
+}
+
+void Game::removePlayer(Player* player) {
+    if (this->state == Game::WAITING || this->state == Game::PLAYING) {
+        bool move_turn = false;
+        if (this->state == Game::PLAYING && player->getStatus() == Player::INTURN) {
+            move_turn = true; this->nextPlayer();
+        }
+
+		int player_id;
+		for (player_id == 0;
+			players[player_id] != player && player_id < players.size();
+			++player_id
+		);
+		if (player_id == players.size())
+			throw("500 Somehow this player does not exists in the game as we recorded.\n");
+
+		delete player;
+		players.erase(players.begin() + player_id);
+        --this->currentNumberOfPlayers;
+        
+        if (this->state == Game::PLAYING) {
+            if (move_turn && player_id < this->currentPlayingPlayerIndex)
+                --this->currentPlayingPlayerIndex;
+            if (this->currentNumberOfPlayers == 1)
+                this->setStatus(Game::FINISHED);
+            this->notifyAllPlayers();
+        }
+    }
+    else if (this->state == Game::FINISHED)
+        throw("500 This player should already be removed when the game finished.\n");
+    else
+        throw("500 Unknown game state.\n");
+}
+
+void Game::setStatus(int status) {
+    this->state = status;
 }

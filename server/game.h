@@ -76,7 +76,7 @@ public:
     string getPlayerNickname(int player_id);
 
     /*
-    * send mesaage to all players in the game
+    * send message to all players in the game
     */
     void notifyAllPlayers();
 
@@ -110,6 +110,9 @@ public:
     */
     bool currentPlayerMoveTurn();
 
+    void removePlayer(Player* player);
+
+    void setStatus(int status);
 
     static int WAITING;
     static int PLAYING;
