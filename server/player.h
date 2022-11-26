@@ -5,29 +5,36 @@
 
 using namespace std;
 
-class Player
-{
+class Game;
+
+class Player {
 private:
-    int socket;
+    int socket; // socket id
+    Game* game;
     string nickname;
-    int status;
-    int canMoveTurn;
+    int status; // in-game status
+    int move_turn;
 
 public:
-    Player(int socket, string name);
+    static const int INTURN = 0;
+    static const int WAITING = 1;
+    static const int WON = 2;
+    static const int DISQUALIFIED = 3;
+
+    Player(int socket_id, string nickname);
     ~Player();
 
-    int getSocket();
+    int getSocketId();
+    Game* getGame();
     string getNickname();
     int getStatus();
-    void setStatus(int status);
-    int getCanMoveTurn();
-    void decreaseCanMoveTurn();
+    int getMoveTurn();
 
-    static int INTURN;
-    static int WAITING;
-    static int WON;
-    static int DISQUALIFIED;
+    void setGame(Game* game);
+    void setStatus(int status);
+    void useMoveTurn();
+
+    void logOut();
 };
 
 #endif

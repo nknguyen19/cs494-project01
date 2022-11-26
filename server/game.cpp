@@ -1,76 +1,48 @@
 #include "game.h"
+#include "player.h"
+#include "utils.h"
 #include <iostream>
 #include <fstream>
-#include "utils.h"
 #include <algorithm>
 #include <sys/socket.h>
 
 using namespace std;
 
-int Game::WAITING = 0;
+Game::Game() : status(WAITING), maxNPlayers(2) { }
 
-int Game::PLAYING = 1;
-
-int Game::FINISHED = 2;
-
-Game::Game()
-{
-    this->currentNumberOfPlayers = 0;
-    this->maxNumberOfPlayers = 2;
-    this->state = WAITING;
+Game::Game(Player* player) : status(WAITING), maxNPlayers(2) {
+    this->players.push_back(player);
 }
 
-Game::~Game()
-{
+Game::~Game() {
     for (Question* q: questions) delete q;
-    for (Player* p: players) delete p;
 }
 
-bool Game::isNicknameExist(string nickname)
-{
-    for (auto player: players)
-    {
-        if (player->getNickname() == nickname)
-        {
-            return true;
-        }
-    }
-    return false;
-}
+int Game::getInQueueNumber() { return this->players.size(); }
 
-bool Game::addPlayer(Player* player)
-{
-    if (this->currentNumberOfPlayers < this->maxNumberOfPlayers)
-    {
+bool Game::addPlayer(Player* player) {
+    if (this->getInQueueNumber() < this->maxNPlayers) {
         this->players.push_back(player);
-        this->currentNumberOfPlayers++;
-
-        if (this->currentNumberOfPlayers == this->maxNumberOfPlayers)
-        {
-            // Game is full, start playing
-            this->startGame();
-        }
-
+        if (this->getInQueueNumber() == this->maxNPlayers)
+            this->start();
         return true;
     }
-
     return false;
 }
 
-void Game::startGame()
-{
-    initQuestions();
-    this->state = PLAYING;
-    this->currentPlayingPlayerIndex = 0;
-    this->currentQuestionIndex = 0;
-    this->numberOfInGamePlayers = this->currentNumberOfPlayers;
-    players[this->currentPlayingPlayerIndex]->setStatus(Player::INTURN);
+void Game::start() {
+    this->status = PLAYING;
+    this->nInGame = this->getInQueueNumber();
+    this->curPlayerIndex = 0;
+    players[this->curPlayerIndex]->setStatus(Player::INTURN);
+    this->curQuestionIndex = 0;
+    this->initQuestions();
 }
 
 void Game::initQuestions() {
     ifstream file("questions.txt");
     string line;
-    int numberOfQuestions = random(maxNumberOfPlayers * 3, maxNumberOfPlayers * 5);
+    int numberOfQuestions = random(maxNPlayers * 3, maxNPlayers * 5);
     
     getline(file, line);
 
@@ -105,7 +77,7 @@ void Game::initQuestions() {
             }
             lineIndex++;
         }
-        // seek to the beginning of the file
+        // seek to the beginnInGame of the file
         file.clear();
         file.seekg(0, ios::beg);
         getline(file, line);
@@ -116,122 +88,99 @@ void Game::initQuestions() {
     file.close();
 }
 
-string Game::getGameStatus()
-{
+string Game::getGameStatus() {
     string gameStatus = "";
-    gameStatus += to_string(this->state) + "\n";
-    gameStatus += to_string(this->currentNumberOfPlayers) + "\n";
-    gameStatus += to_string(this->maxNumberOfPlayers) + "\n";
+    gameStatus += to_string(this->status) + "\n";
+    gameStatus += to_string(this->nInGame) + "\n";
+    gameStatus += to_string(this->maxNPlayers) + "\n";
     for (auto player: players)
-    {
         gameStatus += player->getNickname() + 
                         "\n" + to_string(player->getStatus()) + 
-                        "\n" + to_string(player->getCanMoveTurn()) +
+                        "\n" + to_string(player->getMoveTurn()) +
                         "\n";
-    }
-    if (this->state == PLAYING)
-    {
-        gameStatus += this->questions[this->currentQuestionIndex]->getQuestion() + "\n";
-    }
-    else if (this->state == FINISHED)
-    {
-        gameStatus += "Game finished. " + players[currentPlayingPlayerIndex]->getNickname() + " is the winner!\n";
-    }
+    if (this->status == PLAYING)
+        gameStatus += this->questions[this->curQuestionIndex]->getQuestion() + "\n";
+    else if (this->status == FINISHED)
+        gameStatus += "Game finished. " + players[curPlayerIndex]->getNickname() + " is the winner!\n";
     return gameStatus;
-}
-
-string Game::getPlayerNickname(int player_id) {
-    return players[player_id]->getNickname();
 }
 
 void Game::notifyAllPlayers() {
     string gameStatus = this->getGameStatus();
     for (auto player: players) {
-        send(player->getSocket(), gameStatus.c_str(), gameStatus.length(), 0);
+        send(player->getSocketId(), gameStatus.c_str(), gameStatus.length(), 0);
     }
 }
 
-bool Game::isPlaying() {
-    return this->state != WAITING;
-}
+bool Game::isPlaying() { return this->status == PLAYING; }
+bool Game::isFinished() { return this->status == FINISHED; }
 
-int Game::getCurrentNumberOfPlayers() {
-    return this->currentNumberOfPlayers;
-}
-
-int Game::getPlayerStatus(int player_id) {
-    if (player_id < 0 || currentNumberOfPlayers <= player_id)
-        return -1;
-    else return this->players[player_id]->getStatus();
-}
+int Game::getInGameNumber() { return this->nInGame; }
 
 void Game::nextPlayer() {
-    players[currentPlayingPlayerIndex]->setStatus(Player::WAITING);
+    players[curPlayerIndex]->setStatus(Player::WAITING);
     int next_id;
-    for (next_id = (currentPlayingPlayerIndex + 1) % currentNumberOfPlayers;
+    for (next_id = (curPlayerIndex + 1) % nInGame;
         players[next_id]->getStatus() == Player::DISQUALIFIED;
-        next_id = (next_id + 1) % currentNumberOfPlayers
+        next_id = (next_id + 1) % nInGame
     );
-    players[currentPlayingPlayerIndex = next_id]->setStatus(Player::INTURN);
+    players[curPlayerIndex = next_id]->setStatus(Player::INTURN);
 }
 
 bool Game::submitAnswer(char answer) {
-    if (questions[currentQuestionIndex]->isCorrect(answer)) {
-        ++currentQuestionIndex;
-        if (currentQuestionIndex == questions.size() - 1)
+    if (questions[curQuestionIndex]->isCorrect(answer)) {
+        ++curQuestionIndex;
+        if (curQuestionIndex == questions.size() - 1)
             this->setStatus(Game::FINISHED);
         return true;
     }
     
-    --numberOfInGamePlayers;
-    if (numberOfInGamePlayers == 1)
+    --nInGame;
+    if (nInGame == 1)
         this->setStatus(Game::FINISHED);
     nextPlayer();
     return false;
 }
 
-bool Game::currentPlayerMoveTurn() {
-    if (players[currentPlayingPlayerIndex]->getCanMoveTurn() > 0) {
-        players[currentPlayingPlayerIndex]->decreaseCanMoveTurn();
-        nextPlayer();
-        return true;
-    }
-    return false;
-}
-
-void Game::removePlayer(Player* player) {
-    if (this->state == Game::WAITING || this->state == Game::PLAYING) {
-        bool move_turn = false;
-        if (this->state == Game::PLAYING && player->getStatus() == Player::INTURN) {
-            move_turn = true; this->nextPlayer();
+void Game::remove(Player* player) {
+    if (this->status == Game::WAITING || this->status == Game::PLAYING) {
+        bool moved_turn = false;
+        if (this->status == Game::PLAYING && player->getStatus() == Player::INTURN) {
+            moved_turn = true; this->nextPlayer();
         }
 
 		int player_id;
-		for (player_id == 0;
+		for (player_id = 0;
 			players[player_id] != player && player_id < players.size();
 			++player_id
 		);
 		if (player_id == players.size())
 			throw("500 Somehow this player does not exists in the game as we recorded.\n");
 
-		delete player;
 		players.erase(players.begin() + player_id);
-        --this->currentNumberOfPlayers;
+        --this->nInGame;
         
-        if (this->state == Game::PLAYING) {
-            if (move_turn && player_id < this->currentPlayingPlayerIndex)
-                --this->currentPlayingPlayerIndex;
-            if (this->currentNumberOfPlayers == 1)
+        if (this->status == Game::PLAYING) {
+            if (moved_turn && player_id < this->curPlayerIndex)
+                --this->curPlayerIndex;
+            if (this->nInGame == 1)
                 this->setStatus(Game::FINISHED);
             this->notifyAllPlayers();
         }
     }
-    else if (this->state == Game::FINISHED)
+    else if (this->status == Game::FINISHED)
         throw("500 This player should already be removed when the game finished.\n");
     else
-        throw("500 Unknown game state.\n");
+        throw("500 Unknown game status.\n");
 }
 
-void Game::setStatus(int status) {
-    this->state = status;
+void Game::setStatus(int status) { this->status = status; }
+
+Player* Game::currentPlayer() { return players[curPlayerIndex]; }
+
+void Game::moveTurn() {
+    players[curPlayerIndex]->useMoveTurn();
+    this->nextPlayer();
 }
+
+vector<Player*> Game::getInQueuePlayers() { return players; }

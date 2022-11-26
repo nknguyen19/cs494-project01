@@ -1,4 +1,5 @@
 #include "server.h"
+#include "utils.h"
 #include <string.h> //strlen
 #include <stdlib.h>
 #include <errno.h>
@@ -10,17 +11,12 @@
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
 #include <fcntl.h>
 #include <iostream>
-#include "utils.h"
 
 using namespace std;
 
-Server::Server(): max_clients(30), client_socket(vector<int>(30))
-{
-	//initialise all client_socket[] to 0 so not checked
-	for (int i = 0; i < max_clients; i++)
-	{
-		client_socket[i] = 0;
-	}
+Server::Server() : max_clients(30) {
+	// initialise all client_socket[] to 0 so not checked
+	client_socket = vector<int>(max_clients, 0);
 
 	//create a master socket
 	if ((master_socket = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -65,13 +61,12 @@ Server::Server(): max_clients(30), client_socket(vector<int>(30))
 	}
 }
 
-Server::~Server()
-{
+Server::~Server() {
 	for (Game* g: games) delete g;
+	for (auto p: players) delete p.second;
 }
 
-void Server::run()
-{
+void Server::run() {
 	// accept the incoming connection
 	int addrlen = sizeof(address);
 	cout << "Waiting for connections ..." << endl;
@@ -172,7 +167,7 @@ void Server::run()
 					client_socket[i] = 0;
 
 					// If he's in some game, remove him
-					removePlayer(i);
+					remove(i);
 				}
 
 				// Echo back the message that came in
@@ -181,169 +176,160 @@ void Server::run()
 					// set the string terminating NULL byte on the end of the data read
 					buffer[valread] = '\0';
 					cout << "Message received: " << buffer << endl;
-					executeCommand(string(buffer), sd);
+					processRequest(string(buffer), sd);
 				}
 			}
 		}
 	}
 }
 
-void Server::removeSocketMapping(int client_socket) {
-	if (player_ptr.count(client_socket))
-		player_ptr.erase(client_socket);
-}
-
-void Server::removeGame(Game* game) {
+void Server::remove(Game* game) {
 	int game_id;
 	for (game_id == 0;
 		games[game_id] != game && game_id < games.size();
 		++game_id
 	);
 	if (game_id == games.size())
-		throw("500 Somehow the game this player is in does not exist.\n");
+		throw("500 Somehow this game does not exist.\n");
+
+	vector<Player*> in_queue = game->getInQueuePlayers();
+	for (Player* player: in_queue)
+		players.erase(player->getSocketId());
 
 	delete game;
 	games.erase(games.begin() + game_id);
 }
 
-void Server::removePlayer(int client_socket) {
-	auto p = player_ptr[client_socket];
-	this->removeSocketMapping(client_socket);
-	p.first->removePlayer(p.second);
-	if (p.first->getStatus() == Game::FINISHED
-		|| p.first->getCurrentNumberOfPlayers() == 0)
-		removeGame(p.first);
+void Server::remove(int socket_id) {
+	if (!players.count(socket_id)) return;
+	Player* player = players[socket_id];
+	player->logOut();
+	delete player;
+	players.erase(socket_id);
 }
 
-void Server::executeCommand(string message, int client_socket)
-{
-	string command = parseMessageCommand(message);
-	string content = parseMessageContent(message);
+void Server::processRequest(string request, int socket_id) {
+	string command = parseMessageCommand(request);
+	string content = parseMessageContent(request);
 
 	if (command == "REGISTER")
-		handleRegisterRequest(client_socket, content);
+		handleRegisterRequest(socket_id, content);
 	else if (command == "ANSWER")
-		handleAnswerRequest(client_socket, content);
+		handleAnswerRequest(socket_id, content);
 	else if (command == "MOVE")
-		handleMoveRequest(client_socket);
+		handleMoveRequest(socket_id);
 	else if (command == "LOGOUT")
-		handleLogoutRequest(client_socket);
-	else
-	{
+		handleLogoutRequest(socket_id);
+	else {
 		cout << "Invalid command" << endl;
-		send(client_socket, "404 Invalid command\n", 20, 0);
+		string message = "400 Invalid command.\n";
+		send(socket_id, message.c_str(), message.length(), 0);
 	}
+
+	if (!players.count(socket_id)) return;
+	Player* player = players[socket_id];
+	if (player->getGame()->isFinished())
+		this->remove(player->getGame());
 }
 
-void Server::handleRegisterRequest(int client_socket, string nickname) {
+void Server::handleRegisterRequest(int socket_id, string nickname) {
 	try {
 		// already registered
-		if (player_ptr.count(client_socket))
-			throw("400 You've already registered in a game.");
+		if (players.count(socket_id))
+			throw("400 You've already registered in a game.\n");
 
 		// validate nickname
 		if (!validateNickname(nickname))
 			throw("400 Nickname is invalid. Please try again.\n");
 
 		// check if nickname is already taken
-		for (auto game: games)
-			if (game->isNicknameExist(nickname))
+		for (auto p: players)
+			if (p.second->getNickname() == nickname)
 				throw("400 Nickname is already taken. Please try again.\n");
 
 		// register nickname
-		int game_id = -1;
-		bool hasJoinedGame = false;
-		Player* player = new Player(client_socket, nickname);
-
+		Player* player = new Player(socket_id, nickname);
 		for (int id = 0; id < games.size(); ++id)
 			if (games[id]->addPlayer(player)) {
-				hasJoinedGame = true;
-				game_id = id;
+				player->setGame(games[id]);
 				break;
 			}
 
 		// if no game is available, create a new game
-		if (!hasJoinedGame)
-		{
-			Game* game = new Game();
-			games.push_back(game);
-			game->addPlayer(player);
-			game_id = games.size() - 1;
+		if (player->getGame() == nullptr) {
+			games.push_back(new Game(player));
+			player->setGame(games[games.size() - 1]);
 		}
 
-		player_ptr[client_socket] = { games[game_id], player };
+		players[socket_id] = player;
 
 		// send success message
 		string message{"200 Nickname registered successfully.\n"};
-		send(client_socket, message.c_str(), message.length(), 0);
-		games[game_id]->notifyAllPlayers();
+		send(socket_id, message.c_str(), message.length(), 0);
+
+		if (player->getGame()->isPlaying())
+			player->getGame()->notifyAllPlayers();
 	} catch (const char* message) {
-		send(client_socket, message, strlen(message), 0);
+		send(socket_id, message, strlen(message), 0);
 		return;
 	}
 }
 
-void Server::handleInGameRequest(int client_socket) {
-	if (!player_ptr.count(client_socket))
+void Server::handleInGameRequest(int socket_id) {
+	if (!players.count(socket_id))
 		throw("400 You must register first.\n");
-	if (!player_ptr[client_socket].first->isPlaying())
+	Player* player = players[socket_id];
+	if (!player->getGame()->isPlaying())
 		throw("400 The game has not started.\n");
-	if (player_ptr[client_socket].second->getStatus() != Player::INTURN)
+	if (player->getStatus() != Player::INTURN)
 		throw("400 Not your turn.\n");
 }
 
-void Server::handleAnswerRequest(int client_socket, string answer) {
+void Server::handleAnswerRequest(int socket_id, string answer) {
 	try {
-		handleInGameRequest(client_socket);
-		Game* game_ptr = player_ptr[client_socket].first;
-
-		if (answer.length() != 1 || (
-			(answer[0] < 'A' || 'D' < answer[0]) && 
-			(answer[0] < 'a' || 'd' < answer[0])
-		))
+		handleInGameRequest(socket_id);
+		if (answer.length() != 1 || 
+			toupper(answer[0]) < 'A' || 'D' < toupper(answer[0])
+		)
 			throw("400 Invalid answer. Answer must be A, B, C or D (case insensitive).\n");
 		
+		Player* player = players[socket_id];
 		string message;
-		if (game_ptr->submitAnswer(answer[0]))
+		if (player->getGame()->submitAnswer(answer[0]))
 			message = "200 Correct answer.\n";
-		else message = "200 Incorrect answer. You've been disqualified.\n";
-		send(client_socket, message.c_str(), message.length(), 0);
-		game_ptr->notifyAllPlayers();
+		else
+			message = "200 Incorrect answer. You've been disqualified.\n";
+		send(socket_id, message.c_str(), message.length(), 0);
+		player->getGame()->notifyAllPlayers();
 	} catch (const char* message) {
-		send(client_socket, message, strlen(message), 0);
+		send(socket_id, message, strlen(message), 0);
 		return;
 	}
 }
 
-void Server::handleMoveRequest(int client_socket) {
+void Server::handleMoveRequest(int socket_id) {
 	try {
-		handleInGameRequest(client_socket);
-		Game* game_ptr = player_ptr[client_socket].first;
-		
-		if (game_ptr->currentPlayerMoveTurn() == 0)
-			throw("400 You've already move your turn once.\n");
-
+		handleInGameRequest(socket_id);
+		Player* player = players[socket_id];
+		player->getGame()->moveTurn();
 		string message = "200 Move turn sucessfully.\n";
-		send(client_socket, message.c_str(), message.length(), 0);
-		game_ptr->notifyAllPlayers();
-		if (game_ptr->getStatus() == Game::FINISHED)
-			removeGame(game_ptr);
+		send(socket_id, message.c_str(), message.length(), 0);
+		player->getGame()->notifyAllPlayers();
 	} catch (const char* message) {
-		send(client_socket, message, strlen(message), 0);
+		send(socket_id, message, strlen(message), 0);
 		return;
 	}
 }
 
-void Server::handleLogoutRequest(int client_socket) {
+void Server::handleLogoutRequest(int socket_id) {
 	try {
-		if (!player_ptr.count(client_socket))
+		if (!players.count(socket_id))
 			throw("400 You haven't registered to any game.\n");
-		
-		removePlayer(client_socket);
+		remove(socket_id);
 		string message = "200 Logout successfully.\n";
-		send(client_socket, message.c_str(), message.length(), 0);
+		send(socket_id, message.c_str(), message.length(), 0);
 	} catch (const char* message) {
-		send(client_socket, message, strlen(message), 0);
+		send(socket_id, message, strlen(message), 0);
 		return;
 	}
 }

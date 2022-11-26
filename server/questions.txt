@@ -41,7 +41,7 @@ Dennis Ritchie
 Bjarnne Stautroup
 Tom Smith
 B
-What is the full meaning of PHP?
+What is the full meanInGame of PHP?
 Hypertext Preprocessor
 Pre Hypertext Processor
 Page High Power
@@ -61,7 +61,7 @@ Laravel
 D
 Which is the largest country by population? 
 Russia
-United States of America
+United statuss of America
 China
 Japan
 C
@@ -86,10 +86,10 @@ C
 Chai is a tool used for? 
 Testing
 Module bundling
-Designing
+DesignInGame
 Data Science
 A
-Which is not used for module bundling and task running? 
+Which is not used for module bundling and task runnInGame? 
 Webpack
 Mocha
 Gulp
@@ -97,7 +97,7 @@ Grunt
 B
 Tkinter is a python library used for?
 Artificial Intelligence
-Machine Learning
+Machine LearnInGame
 Desktop development
 Mobile development
 C

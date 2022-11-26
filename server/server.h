@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include "game.h"
+#include "player.h"
 
 #define TRUE 1
 #define FALSE 0
@@ -23,9 +24,14 @@ private:
     fd_set readfds;
 
     vector<Game*> games;
-
-    map<int, pair<Game*, Player*>> player_ptr;
+    map<int, Player*> players;
     // mapping client socket id to the correspond pair (game id, in game player id)
+
+    void handleRegisterRequest(int socket_id, string nickname);
+    void handleInGameRequest(int socket_id);
+    void handleAnswerRequest(int socket_id, string answer);
+    void handleMoveRequest(int socket_id);
+    void handleLogoutRequest(int socket_id);
 
 public:
     Server();
@@ -35,49 +41,10 @@ public:
     * @brief: start the server
     */
     void run();
+    void processRequest(string request, int socket_id);
 
-    void removeSocketMapping(int client_socket);
-    void removeGame(Game* game);
-
-    /**
-    * @brief: remove a player from ongoing game
-    */
-    void removePlayer(int client_socket);
-
-    /**
-    * @brief: execute the message from the client
-    * @param: message: the message from the client,
-    *         client_socket: the socket of the client
-    */
-    void executeCommand(string message, int client_socket);
-
-    /**
-    * @brief: add a new player to the game
-    * @param: client_socket: the socket of the player, 
-    *        nickname: the nickname registered by the player
-    * send the result message back to the client
-    */
-    void handleRegisterRequest(int client_socket, string nickname);
-
-    /**
-    * @brief: check if the player is in the game and in their turn
-    */
-    void handleInGameRequest(int client_socket);
-
-    /**
-    * @brief: handle answer request from client
-    */
-    void handleAnswerRequest(int client_socket, string answer);
-
-    /**
-    * @brief: handle move request from client
-    */
-    void handleMoveRequest(int client_socket);
-
-    /**
-    * @brief: handle logout request from client
-    */
-    void handleLogoutRequest(int client_socket);
+    void remove(Game* game);
+    void remove(int client_socket);
 };
 
 #endif

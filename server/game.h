@@ -3,26 +3,33 @@
 
 #include "question.h"
 #include <vector>
-#include "player.h"
 
 using namespace std;
 
-class Game
-{
+class Player;
+
+class Game {
 private:
-    int currentNumberOfPlayers;
-    int maxNumberOfPlayers;
-    vector<Question*> questions;
+    int status;
+
+    int maxNPlayers; // max number of players
+    int nInGame; // number of in-game players
+    int curPlayerIndex; // current playing player index
     vector<Player*> players;
-    int currentQuestionIndex;
-    int state;
-    int currentPlayingPlayerIndex;
-    int numberOfInGamePlayers;
-    // int previousResult;
+    
+    int curQuestionIndex; // current question index
+    vector<Question*> questions;
 
 public:
+    static const int WAITING = 0;
+    static const int PLAYING = 1;
+    static const int FINISHED = 2;
+
     Game();
+    Game(Player* player);
     ~Game();
+
+    int getInQueueNumber();
 
     /*
     * Randomly select a set of questions from the question bank
@@ -30,32 +37,23 @@ public:
     */
     void initQuestions();
 
-
-    /*
-    * Check if the nickname is already taken in this game
-    */
-    bool isNicknameExist(string nickname);
-
-
     /*
     * Add a player to the game
     * Return true if the player is added successfully
     * Return false if the game is full
-    * If the game is full, the state of the game will be changed to PLAYING 
+    * If the game is full, the status of the game will be changed to PLAYING 
     */
     bool addPlayer(Player* player);
 
-    
     /*
     * Start the game
     */
-    void startGame();
-
+    void start();
 
     /*
     * Get the full game status for the client to display
     * Format:
-    *   <game state>
+    *   <game status>
     *   <number of players>
     *   <max number of players>
     *   <player 1 nickname> 
@@ -73,8 +71,6 @@ public:
     */
     string getGameStatus();
 
-    string getPlayerNickname(int player_id);
-
     /*
     * send message to all players in the game
     */
@@ -85,38 +81,30 @@ public:
     * Return true if the game is started
     */
     bool isPlaying();
+    bool isFinished();
 
     /*
     * Return the current number of players in this game
     */
-    int getCurrentNumberOfPlayers();
-
-    /*
-    * Return the current status of a player
-    */
-    int getPlayerStatus(int player_id);
+    int getInGameNumber();
 
     void nextPlayer();
 
     /**
     * Return true if the answer is correct.
-    * Note that the whole game state after checking answer is also changed.
+    * Note that the whole game status after checking answer is also changed.
     */
     bool submitAnswer(char answer);
 
-    /**
-    * Return true if the current player can move their turn to next player.
-    * Note that the act of moving their turn is also executed.
-    */
-    bool currentPlayerMoveTurn();
-
-    void removePlayer(Player* player);
+    void remove(Player* player);
 
     void setStatus(int status);
 
-    static int WAITING;
-    static int PLAYING;
-    static int FINISHED;
+    Player* currentPlayer();
+
+    void moveTurn();
+
+    vector<Player*> getInQueuePlayers();
 };
 
 #endif // GAME_SERVER_H

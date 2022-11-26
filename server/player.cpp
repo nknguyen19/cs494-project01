@@ -1,50 +1,34 @@
 #include "player.h"
-#include "server.h"
+#include "game.h"
 
-Player::Player(int socket, string name)
-{
-    this->socket = socket;
-    this->nickname = name;
-    this->status = WAITING;
-    this->canMoveTurn = 1;
+#include <iostream>
+
+Player::Player(int socket_id, string nickname) :
+    socket(socket_id), game(nullptr), nickname(nickname), status(WAITING), move_turn(1) { }
+
+Player::~Player() { }
+
+int Player::getSocketId() { return this->socket; }
+
+Game* Player::getGame() { return this->game; }
+
+string Player::getNickname() { return this->nickname; }
+
+int Player::getStatus() { return this->status; }
+
+int Player::getMoveTurn() { return this->move_turn; }
+
+void Player::setGame(Game* game) { this->game = game; }
+
+void Player::setStatus(int status) { this->status = status; }
+
+void Player::useMoveTurn() {
+    if (this->move_turn <= 0)
+		throw("400 You cannot move turn anymore.\n");
+    --this->move_turn;
 }
 
-Player::~Player()
-{
-    Server::removeSocketMapping(this->socket);
+void Player::logOut() {
+    if (this->game == nullptr) return;
+    this->game->remove(this);
 }
-
-int Player::getSocket()
-{
-    return this->socket;
-}
-
-string Player::getNickname()
-{
-    return this->nickname;
-}
-
-int Player::getStatus()
-{
-    return this->status;
-}
-
-void Player::setStatus(int status)
-{
-    this->status = status;
-}
-
-int Player::getCanMoveTurn()
-{
-    return this->canMoveTurn;
-}
-
-void Player::decreaseCanMoveTurn()
-{
-    --this->canMoveTurn;
-}
-
-int Player::INTURN = 0;
-int Player::WAITING = 1;
-int Player::WON = 2;
-int Player::DISQUALIFIED = 3;

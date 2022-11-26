@@ -6,8 +6,7 @@
 
 using namespace std;
 
-class Question
-{
+class Question {
 private:
     string question;
     vector<string> choices;

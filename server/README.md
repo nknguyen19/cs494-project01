@@ -42,7 +42,7 @@ Note that whatever value comes after MOVE command code will be ignored.
 #### Response Formats
 ```
 200 Move turn sucessfully.
-400 You've already move your turn once.
+400 You cannot move turn anymore.
 ```
 
 ### Logging Out From a Game
@@ -58,9 +58,9 @@ Note that whatever value comes after MOVE command code will be ignored.
 ```
 
 # Server Message Formats
-## Game State Updating
+## Game status Updating
 ```
-<game_state>
+<game_status>
 <no_players>
 <max_no_players>
 <player_1_nickname> <player_1_status> <player_1_can_move_turn>
