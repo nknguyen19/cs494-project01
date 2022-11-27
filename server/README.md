@@ -28,8 +28,8 @@ ANSWER <answer_option>
 
 #### Response Formats
 ```
-200 Correct answer.
-200 Incorrect answer. You've been disqualified.
+200 CORRECT.
+200 INCORRECT.
 400 Invalid answer. Answer must be A, B, C or D (case insensitive).
 ```
 

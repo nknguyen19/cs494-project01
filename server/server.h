@@ -24,7 +24,7 @@ private:
     fd_set readfds;
 
     vector<Game*> games;
-    map<int, pair<Player*, Game*>> descriptor;
+    map<int, pair<Game*, Player*>> descriptor;
     // mapping client socket id to the correspond pair of pointers
 
     void handleRegisterCommand(int socket_id, string nickname);

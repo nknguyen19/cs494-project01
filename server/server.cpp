@@ -218,7 +218,7 @@ void Server::handleRegisterCommand(int socket_id, string nickname) {
 
 		// check if nickname is already taken
 		for (auto p: descriptor)
-			if (p.second.first->getNickname() == nickname)
+			if (p.second.second->getNickname() == nickname)
 				throw("400 Nickname is already taken. Please try again.\n");
 
 		// register nickname
@@ -226,14 +226,14 @@ void Server::handleRegisterCommand(int socket_id, string nickname) {
 		Game* game = nullptr;
 		for (int id = 0; id < games.size(); ++id)
 			if (games[id]->addPlayer(player)) {
-				descriptor[socket_id] = { player, game = games[id] };
+				descriptor[socket_id] = { game = games[id], player };
 				break;
 			}
 
 		// if no game is available, create a new game
 		if (game == nullptr) {
 			games.push_back(new Game(player));
-			descriptor[socket_id] = { player, game = games[games.size() - 1] };
+			descriptor[socket_id] = { game = games[games.size() - 1], player };
 		}
 
 		// send success message
@@ -252,9 +252,9 @@ void Server::handleInGameCommand(int socket_id) {
 	if (!descriptor.count(socket_id))
 		throw("400 You must register first.\n");
 	auto d = descriptor[socket_id];
-	if (!d.second->isPlaying())
+	if (!d.first->isPlaying())
 		throw("400 The game has not started.\n");
-	if (!d.first->isInTurn())
+	if (!d.second->isInTurn())
 		throw("400 Not your turn.\n");
 }
 
@@ -268,14 +268,14 @@ void Server::handleAnswerCommand(int socket_id, string answer) {
 		
 		auto d = descriptor[socket_id];
 		string message;
-		if (d.second->submitAnswer(answer[0]))
-			message = "200 Correct answer.\n";
+		if (d.first->submitAnswer(answer[0]))
+			message = "200 CORRECT\n";
 		else
-			message = "200 Incorrect answer. You've been disqualified.\n";
+			message = "200 INCORRECT\n";
 		send(socket_id, message.c_str(), message.length(), 0);
-		d.second->notifyAllPlayers();
-		if (d.second->isFinished())
-			remove(d.second);
+		d.first->notifyAllPlayers();
+		if (d.first->isFinished())
+			remove(d.first);
 	} catch (const char* message) {
 		send(socket_id, message, strlen(message), 0);
 		return;
@@ -286,10 +286,10 @@ void Server::handleMoveCommand(int socket_id) {
 	try {
 		handleInGameCommand(socket_id);
 		auto d = descriptor[socket_id];
-		d.second->moveTurn();
-		string message = "200 Move turn sucessfully.\n";
+		d.first->moveTurn();
+		string message = "200 OK\n";
 		send(socket_id, message.c_str(), message.length(), 0);
-		d.second->notifyAllPlayers();
+		d.first->notifyAllPlayers();
 	} catch (const char* message) {
 		send(socket_id, message, strlen(message), 0);
 		return;
@@ -312,7 +312,7 @@ void Server::handleLogoutCommand(int socket_id) {
 void Server::handleInfoCommand(int socket_id) {
 	string message;
 	if (descriptor.count(socket_id))
-		message = "200\n" + descriptor[socket_id].first->getInfoMessage();
+		message = "200\n" + descriptor[socket_id].second->getInfoMessage();
 	else
 		message = "200 You haven't registered to any game.\n";
 	send(socket_id, message.c_str(), message.length(), 0);
@@ -334,7 +334,7 @@ void Server::remove(Game* game) {
 void Server::remove(int socket_id) {
 	auto d = descriptor[socket_id];
 	descriptor.erase(socket_id);
-	d.second->remove(d.first);
-	if (d.second->isFinished())
-		remove(d.second);
+	d.first->remove(d.second);
+	if (d.first->isFinished())
+		remove(d.first);
 }
