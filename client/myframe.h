@@ -26,7 +26,7 @@ public:
 
     bool connectServer();
     void sendMessage(string message);
-    string receiveMesage();
+    bool receiveMesage(string &message);
     string pasreMessageStatus(string message);
     string parseMessageContent(string message);
     string parseGameStatus(string message);
@@ -39,6 +39,8 @@ public:
     void OnStart(wxCommandEvent &event);
     void OnAnswer(wxCommandEvent &event);
     void OnMoveTurn(wxCommandEvent &event);
+    void OnLogout(wxCommandEvent &event);
+    void OnNewGame(wxCommandEvent &event);
     void handleCorrectAnswer();
     void handleWrongAnswer();
 
@@ -54,6 +56,9 @@ enum
     ID_RegisterButton = 2,
     ID_UsernameTextbox = 3,
     ID_StartButton = 4,
+    ID_LogOut = 5,
+    ID_NewGame = 6,
+    ID_Eliminated = 7,
     ID_PlayerNickname = 10,
     ID_Question = 20,
     ID_Answer = 21,

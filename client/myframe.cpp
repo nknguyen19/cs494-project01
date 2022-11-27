@@ -10,10 +10,17 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Hello World")
     // connectServer();
     this->game = nullptr;
     wxMenu *menuFile = new wxMenu;
-    menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
-                     "Help string shown in status bar for this menu item");
+    menuFile->Append(ID_Hello, "&Home\tCtrl-H",
+                     "Back to home screen");
     menuFile->AppendSeparator();
-    menuFile->Append(wxID_EXIT);
+    menuFile->Append(ID_NewGame, "&New game\tCtrl-N",
+                    "Start a new game");
+    menuFile->AppendSeparator();
+    menuFile->Append(ID_LogOut, "&Log out\tCtrl-L",
+                     "Log out from this game");
+    menuFile->AppendSeparator();
+    menuFile->Append(wxID_EXIT), "&Exit\tCtrl-Q",
+        "Quit this program";
 
     wxMenu *menuHelp = new wxMenu;
     menuHelp->Append(wxID_ABOUT);
@@ -30,6 +37,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Hello World")
     Bind(wxEVT_MENU, &MyFrame::OnHello, this, ID_Hello);
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
+    Bind(wxEVT_MENU, &MyFrame::OnNewGame, this, ID_NewGame);
+    Bind(wxEVT_MENU, &MyFrame::OnLogout, this, ID_LogOut);
 }
 
 MyFrame::~MyFrame()
@@ -50,29 +59,43 @@ bool MyFrame::connectServer()
     addr.Hostname("localhost");
     addr.Service(PORT);
     client->Connect(addr, false);
-    string result = receiveMesage();
-    if (result == OK)
+    if (client->WaitOnConnect(5))
     {
-        return true;
+        string result;
+        if (receiveMesage(result))
+        {
+            if (result == OK)
+            {
+                return true;
+            }
+        }
     }
-    else
-    {
-        wxLogMessage("Failed to connect to server");
-        return false;
-    }
+    wxLogMessage("Failed to connect to server");
+    return false;
 }
 
 void MyFrame::sendMessage(string message)
 {
+    if (!client->IsConnected())
+    {
+        wxLogMessage("Not connected to server");
+        showGreetingsFrame();
+        return;
+    }
     int res = (client->Write(message.c_str(), message.length())).LastCount();
 }
 
-string MyFrame::receiveMesage()
+bool MyFrame::receiveMesage(string &message)
 {
+    if (!client->IsConnected())
+    {
+        return false;
+    }
     this->client->WaitForRead();
     char buffer[1024];
     int res = (client->Read(buffer, 1024)).LastCount();
-    return string(buffer, res);
+    message = string(buffer, res);
+    return true;
 }
 
 
@@ -107,7 +130,12 @@ void MyFrame::clearFrame()
  ******************************************************/
 void MyFrame::OnExit(wxCommandEvent &event)
 {
+    //force close frame
     Close(true);
+
+    // stop waiting for server message
+    this->client->InterruptWait();
+    this->client->Close();
 }
 
 void MyFrame::OnAbout(wxCommandEvent &event)
@@ -129,7 +157,12 @@ void MyFrame::OnRegister(wxCommandEvent &event)
     this->sendMessage("REGISTER " + string(username));
 
     // Receive message from server
-    string response = this->receiveMesage();
+    string response;
+    if (!this->receiveMesage(response))
+    {
+        wxLogMessage("Failed to connect to server");
+        return;
+    }
     wxLogMessage("Response: %s", response);
 
     // Process response
@@ -144,7 +177,11 @@ void MyFrame::OnRegister(wxCommandEvent &event)
         if (response.length() == 0)
         {
             // not sure sometimes game status is not sent along with the previous message
-            response = this->receiveMesage();
+            if (!this->receiveMesage(response))
+            {
+                wxLogMessage("Failed to connect to server");
+                return;
+            }
         }
         this->game->update(response);
         this->showGameFrame();
@@ -163,6 +200,139 @@ void MyFrame::OnStart(wxCommandEvent &event)
     }
 }
 
+void MyFrame::OnAnswer(wxCommandEvent &event)
+{
+    if (!this->game->getIsMyTurn()) {
+        wxLogMessage("It's not your turn");
+        return;
+    }
+    if (this->game->isFinished()) {
+        wxLogMessage("Game is finished");
+        return;
+    }
+    if (this->game->isEliminated()) {
+        wxLogMessage("You are eliminated");
+        return;
+    }
+    int id = event.GetId();
+    int answer = id - ID_Answer;
+    this->sendMessage("ANSWER " + string(1, char(answer + 'A')));
+    string response;
+    if (!this->receiveMesage(response))
+    {
+        wxLogMessage("Failed to connect to server");
+        return;
+    }
+    
+    // Answer result
+    string status = this->pasreMessageStatus(response);
+    string content = this->parseMessageContent(response);
+    string game_status = response.substr(response.find_first_of("\n") + 1);
+    if (game_status.length() == 0) {
+        if (!this->receiveMesage(game_status))
+        {
+            wxLogMessage("Failed to connect to server");
+            return;
+        }
+    }
+    this->game->update(game_status);
+    this->game->update(game_status);
+    if (status == "200") {
+        if (content == CORRECT) {
+            this->handleCorrectAnswer();
+        } 
+        else if (content == INCORRECT) {
+            this->handleWrongAnswer();
+        }
+        this->showGameFrame();
+    }
+    else {
+        wxLogMessage(content.c_str());
+    }
+}
+
+void MyFrame::OnMoveTurn(wxCommandEvent &event)
+{
+    if (!this->game->getIsMyTurn()) {
+        wxLogMessage("It's not your turn");
+        return;
+    }
+    if (this->game->isFinished()) {
+        wxLogMessage("Game is finished");
+        return;
+    }
+    if (this->game->isEliminated()) {
+        wxLogMessage("You are eliminated");
+        return;
+    }
+    this->sendMessage("MOVE");
+    string response;
+    if (!this->receiveMesage(response))
+    {
+        wxLogMessage("Failed to connect to server");
+        return;
+    }
+    string status = this->pasreMessageStatus(response);
+    string content = this->parseMessageContent(response);
+    string game_status = response.substr(response.find_first_of("\n") + 1);
+    if (game_status.length() == 0) {
+        if (!this->receiveMesage(game_status))
+        {
+            wxLogMessage("Failed to connect to server");
+            return;
+        }
+    }
+    this->game->update(game_status);
+    if (status == "200") {
+        this->showGameFrame();
+        wxLogStatus("Moved your turn!");
+    }
+    else {
+        wxLogMessage(content.c_str());
+    }
+}
+
+void MyFrame::OnLogout(wxCommandEvent &event)
+{
+    this->sendMessage("LOGOUT");
+    string response;
+    if (!this->receiveMesage(response))
+    {
+        wxLogMessage("Failed to connect to server");
+        return;
+    }
+    string status = this->pasreMessageStatus(response);
+    string content = this->parseMessageContent(response);
+    if (status == "200") {
+        wxLogMessage("Logout successfully");
+        this->showGreetingsFrame();
+    }
+    else {
+        wxLogMessage(content.c_str());
+    }
+}
+
+void MyFrame::OnNewGame(wxCommandEvent &event)
+{
+    if (!this->game->isFinished()) {
+        wxLogMessage("Game is not finished");
+        return;
+    }
+    this->showRegisterFrame();
+}
+
+void MyFrame::handleCorrectAnswer()
+{
+    // wxLogStatus("Correct answer! Continue to next question");
+    wxLogMessage("Correct answer! Continue to next question");
+}
+
+void MyFrame::handleWrongAnswer()
+{
+    // wxLogStatus("Incorrect answer! You have been eliminated!");
+    wxLogMessage("Incorrect answer! You have been eliminated!");
+    
+}
 
 /******************************************************
  * 
@@ -173,6 +343,7 @@ void MyFrame::OnStart(wxCommandEvent &event)
 void MyFrame::showGreetingsFrame()
 {
     clearFrame();
+    this->SetSize(400, 300);
     wxStaticText *helloText = new wxStaticText(this, ID_Hello, "Hello, ", wxPoint(10, 10), wxSize(100, 20));
     controls.push_back(helloText);
     wxButton *startButton = new wxButton(this, ID_StartButton, "Start", wxPoint(10, 40), wxSize(100, 20));
@@ -183,6 +354,7 @@ void MyFrame::showGreetingsFrame()
 void MyFrame::showRegisterFrame()
 {
     clearFrame();
+    this->SetSize(500, 300);
     wxButton *registerButton = new wxButton(this, ID_RegisterButton, "Register", wxPoint(200, 100), wxSize(100, 50));
     controls.push_back(registerButton);
     wxTextCtrl *username_textbox = new wxTextCtrl(this, ID_UsernameTextbox, "", wxPoint(100, 30), wxSize(300, 50));
@@ -246,91 +418,16 @@ void MyFrame::showGameFrame()
         controls.push_back(result_text);
     }
 
-    string response = this->receiveMesage();
+    if (this->game->isEliminated()) {
+        // display eliminated
+        wxStaticText *eliminated_text = new wxStaticText(this, ID_Eliminated, "You have been eliminated!", wxPoint(200, 500), wxSize(400, 50));
+        controls.push_back(eliminated_text);
+    }
+    string response;
+    if (!this->receiveMesage(response)) {
+        wxLogMessage("Failed to connect to server");
+        return;
+    }
     this->game->update(response);
     this->showGameFrame();
-}
-
-void MyFrame::OnAnswer(wxCommandEvent &event)
-{
-    if (!this->game->getIsMyTurn()) {
-        wxLogMessage("It's not your turn");
-        return;
-    }
-    if (this->game->isFinished()) {
-        wxLogMessage("Game is finished");
-        return;
-    }
-    if (this->game->isEliminated()) {
-        wxLogMessage("You are eliminated");
-        return;
-    }
-    int id = event.GetId();
-    int answer = id - ID_Answer;
-    this->sendMessage("ANSWER " + string(1, char(answer + 'A')));
-    string response = this->receiveMesage();
-    
-    // Answer result
-    string status = this->pasreMessageStatus(response);
-    string content = this->parseMessageContent(response);
-    string game_status = response.substr(response.find_first_of("\n") + 1);
-    if (game_status.length() == 0) {
-        game_status = this->receiveMesage();
-    }
-    this->game->update(game_status);
-    this->game->update(game_status);
-    if (status == "200") {
-        if (content == CORRECT) {
-            this->handleCorrectAnswer();
-        } 
-        else if (content == INCORRECT) {
-            this->handleWrongAnswer();
-        }
-        this->showGameFrame();
-    }
-    else {
-        wxLogMessage(content.c_str());
-    }
-}
-
-void MyFrame::OnMoveTurn(wxCommandEvent &event)
-{
-    if (!this->game->getIsMyTurn()) {
-        wxLogMessage("It's not your turn");
-        return;
-    }
-    if (this->game->isFinished()) {
-        wxLogMessage("Game is finished");
-        return;
-    }
-    if (this->game->isEliminated()) {
-        wxLogMessage("You are eliminated");
-        return;
-    }
-    this->sendMessage("MOVE");
-    string response = this->receiveMesage();
-    string status = this->pasreMessageStatus(response);
-    string content = this->parseMessageContent(response);
-    string game_status = response.substr(response.find_first_of("\n") + 1);
-    if (game_status.length() == 0) {
-        game_status = this->receiveMesage();
-    }
-    this->game->update(game_status);
-    if (status == "200") {
-        this->showGameFrame();
-        wxLogStatus("Moved your turn!");
-    }
-    else {
-        wxLogMessage(content.c_str());
-    }
-}
-
-void MyFrame::handleCorrectAnswer()
-{
-    wxLogStatus("Correct answer! Continue to next question");
-}
-
-void MyFrame::handleWrongAnswer()
-{
-    wxLogStatus("Incorrect answer! You have been eliminated!");
 }
