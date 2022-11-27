@@ -47,6 +47,9 @@ public:
     void showGreetingsFrame();
     void showRegisterFrame();
     void showGameFrame();
+    void displayPlayers();
+    void displayQuestion();
+    void displayeStatus();
     DECLARE_EVENT_TABLE();
 };
 

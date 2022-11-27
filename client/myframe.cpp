@@ -9,6 +9,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Hello World")
 {
     // connectServer();
     this->game = nullptr;
+    this->SetBackgroundColour(*wxLIGHT_GREY);
+    this->SetForegroundColour(*wxWHITE);
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Home\tCtrl-H",
                      "Back to home screen");
@@ -362,20 +364,60 @@ void MyFrame::showRegisterFrame()
     Bind(wxEVT_BUTTON, &MyFrame::OnRegister, this, ID_RegisterButton);
 }
 
-void MyFrame::showGameFrame()
-{
-    clearFrame();
-    this->SetSize(800, 600);
+void MyFrame::displayPlayers() {
+    vector<Player*> players = this->game->getPlayers();
+    wxBoxSizer *playerBox = new wxBoxSizer(wxVERTICAL);
+    for (int i = 0; i < players.size(); i++)
+    {
+        Player *player = players[i];
+        wxButton *player_name = new wxButton(this, 
+                                            ID_PlayerNickname, 
+                                            player->nickname, 
+                                            wxPoint(50, 100 + i * 55), 
+                                            wxSize(200, 50),
+                                            wxBORDER_NONE);
+        player_name->SetBackgroundColour(wxColor(26, 26, 26));
+        player_name->SetWindowStyle(wxBORDER_DOUBLE);
+        player_name->SetFont(wxFont(15, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_LIGHT));
+        // playerBox->Add(player_name, 1, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
+        controls.push_back(player_name);
+    }
+}
 
-    // display my status
-    if (!this->game->isFinished()){
+void MyFrame::displayQuestion() {
+    Question *question = this->game->getCurrentQuestion();
+    wxBoxSizer *questionBox = new wxBoxSizer(wxVERTICAL);
+    wxStaticText *question_text = new wxStaticText(this, ID_Question, question->question, wxPoint(300, 100), wxSize(450, 100));
+    question_text->SetFont(wxFont(18, wxFONTFAMILY_SCRIPT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+    question_text->SetForegroundColour(wxColor(26, 26, 26));
+    // questionBox->Add(question_text, 1, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
+    controls.push_back(question_text);
+
+    // display answers
+    vector<string> answers = question->answers;
+    for (int i = 0; i < answers.size(); i++)
+    {
+        wxButton *answer_button = new wxButton(this, ID_Answer + i, answers[i], wxPoint(300, 200 + 55 * i), wxSize(400, 50));
+        answer_button->SetBackgroundColour(wxColor(26, 26, 26));
+        answer_button->SetForegroundColour(wxColor(255, 255, 255));
+        answer_button->SetFont(wxFont(10, wxFONTFAMILY_SCRIPT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT));
+        // questionBox->Add(answer_button, 1, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
+        controls.push_back(answer_button);
+        Bind(wxEVT_BUTTON, &MyFrame::OnAnswer, this, ID_Answer + i);
+    }
+}
+
+void MyFrame::displayeStatus() {
+    if (!this->game->isFinished()) {
         string currentPlayingPlayer = this->game->getCurrentPlayingPlayer().nickname;
         wxStaticText *myStatusText = new wxStaticText(this, 
                                                     ID_MyStatus, 
                                                     this->game->isWaiting() ? "Waiting for other player" :
                                                     (this->game->getIsMyTurn() ? "Your turn" : (currentPlayingPlayer + "'s turn")),
-                                                    wxPoint(250, 50), 
-                                                    wxSize(200, 50));
+                                                    wxPoint(50, 50), 
+                                                    wxSize(500, 50));
+        myStatusText->SetFont(wxFont(20, wxFONTFAMILY_SCRIPT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+        myStatusText->SetForegroundColour(wxColor(26, 26, 26));
         controls.push_back(myStatusText);
 
         // display move turn button
@@ -387,41 +429,37 @@ void MyFrame::showGameFrame()
         }
     }
 
-    // display players
-    vector<Player*> players = this->game->getPlayers();
-    for (int i = 0; i < players.size(); i++)
-    {
-        Player *player = players[i];
-        wxStaticText *player_name = new wxStaticText(this, ID_PlayerNickname, player->nickname, wxPoint(100, 150 + 50 * i), wxSize(100, 50));
-        controls.push_back(player_name);
-    }
-
-    if (this->game->isPlaying()) {
-        // display question
-        Question *question = this->game->getCurrentQuestion();
-        wxStaticText *question_text = new wxStaticText(this, ID_Question, question->question, wxPoint(250, 150), wxSize(500, 50));
-        controls.push_back(question_text);
-
-        // display answers
-        vector<string> answers = question->answers;
-        for (int i = 0; i < answers.size(); i++)
-        {
-            wxButton *answer_button = new wxButton(this, ID_Answer + i, answers[i], wxPoint(250, 200 + 50 * i), wxSize(500, 50));
-            controls.push_back(answer_button);
-            Bind(wxEVT_BUTTON, &MyFrame::OnAnswer, this, ID_Answer + i);
-        }
-    }
-
     if (this->game->isFinished()) {
         // display result
         wxStaticText *result_text = new wxStaticText(this, ID_Result, this->game->getResult(), wxPoint(200, 50), wxSize(500, 50));
+        result_text->SetFont(wxFont(20, wxFONTFAMILY_MODERN, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_BOLD));
+        result_text->SetForegroundColour(wxColor(51, 102, 0));
         controls.push_back(result_text);
     }
 
     if (this->game->isEliminated()) {
         // display eliminated
         wxStaticText *eliminated_text = new wxStaticText(this, ID_Eliminated, "You have been eliminated!", wxPoint(200, 500), wxSize(400, 50));
+        eliminated_text->SetFont(wxFont(10, wxFONTFAMILY_SCRIPT, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_LIGHT));
+        eliminated_text->SetForegroundColour(wxColor(255, 0, 0));
         controls.push_back(eliminated_text);
+    }
+}
+
+void MyFrame::showGameFrame()
+{
+    clearFrame();
+    this->SetSize(800, 600);
+
+    // display my status
+    this->displayeStatus();
+
+    // display players
+    this->displayPlayers();
+
+    if (this->game->isPlaying()) {
+        // display question
+        this->displayQuestion();
     }
     string response;
     if (!this->receiveMesage(response)) {
