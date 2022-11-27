@@ -118,8 +118,6 @@ bool Game::isPlaying() { return status == PLAYING; }
 bool Game::isFinished() { return status == FINISHED; }
 
 void Game::nextPlayer() {
-    if (players[cur_player_id]->isInTurn())
-        players[cur_player_id]->setStatus(Player::WAITING);
     int next_id;
     for (next_id = (cur_player_id + 1) % players.size();
         players[next_id]->isDisqualified();
@@ -131,21 +129,33 @@ void Game::nextPlayer() {
 bool Game::submitAnswer(char answer) {
     if (questions[cur_question_id]->isCorrect(answer)) {
         ++cur_question_id;
-        if (cur_question_id == questions.size() - 1)
+        if (cur_question_id == questions.size() - 1){
             status = FINISHED;
+            players[cur_player_id]->setStatus(Player::WON);
+        }
         return true;
     }
     
-    players[cur_player_id]->setStatus(Player::DISQUALIFIED);
     --n_playing;
-    if (n_playing == 1)
+    players[cur_player_id]->setStatus(Player::DISQUALIFIED);
+    
+    if (n_playing == 1) {
         status = FINISHED;
+        for (auto player: players)
+            if (!player->isDisqualified()) {
+                player->setStatus(Player::WON);
+                break;
+            }
+        return false;
+    }
+
     nextPlayer();
     return false;
 }
 
 void Game::moveTurn() {
     players[cur_player_id]->useMoveTurn();
+    players[cur_player_id]->setStatus(Player::WAITING);
     nextPlayer();
 }
 

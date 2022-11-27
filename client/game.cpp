@@ -22,7 +22,7 @@ Game::Game(string myNickname)
     this->isMyTurn = false;
     this->myNickname = myNickname;
     this->numberOfPlayers = 0;
-    this->maxNumberOfPlayers = 0;
+    this->numberOfPlayingPlayers = 0;
 }
 
 Game::~Game()
@@ -33,9 +33,9 @@ void Game::update(string gameStatus)
 {
     // get line by line from gameStatus and update game
     try {
-    string line;
+        string line;
         istringstream f(gameStatus);
-        int status, numberOfPlayers, maxNumberOfPlayers;
+        int status, numberOfPlayers, numberOfPlayingPlayers;
         vector<Player*> players;
         Question *currentQuestion;
 
@@ -44,15 +44,15 @@ void Game::update(string gameStatus)
         status = stoi(line);
         this->status = status;
 
+        // get number of playing players
+        getline(f, line);
+        numberOfPlayingPlayers = stoi(line);
+        this->numberOfPlayingPlayers = numberOfPlayingPlayers;
+
         // get number of players
         getline(f, line);
         numberOfPlayers = stoi(line);
         this->numberOfPlayers = numberOfPlayers;
-
-        // get max number of players
-        getline(f, line);
-        maxNumberOfPlayers = stoi(line);
-        this->maxNumberOfPlayers = maxNumberOfPlayers;
 
         // get players
         for (int i = 0; i < numberOfPlayers; i++) {
@@ -119,9 +119,9 @@ int Game::getNumberOfPlayers()
     return this->numberOfPlayers;
 }
 
-int Game::getMaxNumberOfPlayers()
+int Game::getNumberOfPlayingPlayers()
 {
-    return this->maxNumberOfPlayers;
+    return this->numberOfPlayingPlayers;
 }
 
 Question* Game::getCurrentQuestion()

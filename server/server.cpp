@@ -164,12 +164,12 @@ void Server::run() {
 						<< ", port " 
 						<< ntohs(address.sin_port) << endl;
 
+					// If he's in some game, remove him
+					remove(sd);
+
 					// Close the socket and mark as 0 in list for reuse
 					close(sd);
 					client_socket[i] = 0;
-
-					// If he's in some game, remove him
-					remove(i);
 				}
 
 				// Echo back the message that came in
@@ -240,8 +240,7 @@ void Server::handleRegisterCommand(int socket_id, string nickname) {
 		string message{"200 Nickname registered successfully.\n"};
 		send(socket_id, message.c_str(), message.length(), 0);
 
-		if (game->isPlaying())
-			game->notifyAllPlayers();
+		game->notifyAllPlayers();
 	} catch (const char* message) {
 		send(socket_id, message, strlen(message), 0);
 		return;
@@ -321,7 +320,7 @@ void Server::handleInfoCommand(int socket_id) {
 void Server::remove(Game* game) {
 	auto ptr = find(games.begin(), games.end(), game);
 	if (ptr == games.end())
-		throw("500 Somehow this game does not exist.\n");
+		throw("404 Somehow this game does not exist.\n");
 
 	vector<Player*> in_game = game->getInGamePlayers();
 	for (Player* player: in_game)

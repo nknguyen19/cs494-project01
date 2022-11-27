@@ -35,7 +35,7 @@ private:
     int status;
     bool isMyTurn;
     int numberOfPlayers;
-    int maxNumberOfPlayers;
+    int numberOfPlayingPlayers;
     Question *currentQuestion;
     string myNickname;
     string winner;
@@ -49,7 +49,7 @@ public:
     int getStatus();
     bool getIsMyTurn();
     int getNumberOfPlayers();
-    int getMaxNumberOfPlayers();
+    int getNumberOfPlayingPlayers();
     Question* getCurrentQuestion();
     string getMyNickname();
     bool isPlaying();
