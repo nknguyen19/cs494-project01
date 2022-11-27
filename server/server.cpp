@@ -11,10 +11,13 @@
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
 #include <fcntl.h>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
-Server::Server() : max_clients(30) {
+#define DEFAULT_MAX_CLIENTS 30
+
+Server::Server() : max_clients(DEFAULT_MAX_CLIENTS) {
 	// initialise all client_socket[] to 0 so not checked
 	client_socket = vector<int>(max_clients, 0);
 
@@ -63,13 +66,12 @@ Server::Server() : max_clients(30) {
 
 Server::~Server() {
 	for (Game* g: games) delete g;
-	for (auto p: players) delete p.second;
 }
 
 void Server::run() {
 	// accept the incoming connection
 	int addrlen = sizeof(address);
-	cout << "Waiting for connections ..." << endl;
+	cout << "Waiting for connections..." << endl;
 
 	while (TRUE) {
 		// clear the socket set
@@ -176,66 +178,38 @@ void Server::run() {
 					// set the string terminating NULL byte on the end of the data read
 					buffer[valread] = '\0';
 					cout << "Message received: " << buffer << endl;
-					processRequest(string(buffer), sd);
+					executeCommand(string(buffer), sd);
 				}
 			}
 		}
 	}
 }
 
-void Server::remove(Game* game) {
-	int game_id;
-	for (game_id == 0;
-		games[game_id] != game && game_id < games.size();
-		++game_id
-	);
-	if (game_id == games.size())
-		throw("500 Somehow this game does not exist.\n");
-
-	vector<Player*> in_queue = game->getInQueuePlayers();
-	for (Player* player: in_queue)
-		players.erase(player->getSocketId());
-
-	delete game;
-	games.erase(games.begin() + game_id);
-}
-
-void Server::remove(int socket_id) {
-	if (!players.count(socket_id)) return;
-	Player* player = players[socket_id];
-	player->logOut();
-	delete player;
-	players.erase(socket_id);
-}
-
-void Server::processRequest(string request, int socket_id) {
-	string command = parseMessageCommand(request);
-	string content = parseMessageContent(request);
+void Server::executeCommand(string message, int socket_id) {
+	string command = parseMessageCommand(message);
+	string content = parseMessageContent(message);
 
 	if (command == "REGISTER")
-		handleRegisterRequest(socket_id, content);
+		handleRegisterCommand(socket_id, content);
 	else if (command == "ANSWER")
-		handleAnswerRequest(socket_id, content);
+		handleAnswerCommand(socket_id, content);
 	else if (command == "MOVE")
-		handleMoveRequest(socket_id);
+		handleMoveCommand(socket_id);
 	else if (command == "LOGOUT")
-		handleLogoutRequest(socket_id);
+		handleLogoutCommand(socket_id);
+	else if (command == "INFO")
+		handleInfoCommand(socket_id);
 	else {
 		cout << "Invalid command" << endl;
 		string message = "400 Invalid command.\n";
 		send(socket_id, message.c_str(), message.length(), 0);
 	}
-
-	if (!players.count(socket_id)) return;
-	Player* player = players[socket_id];
-	if (player->getGame()->isFinished())
-		this->remove(player->getGame());
 }
 
-void Server::handleRegisterRequest(int socket_id, string nickname) {
+void Server::handleRegisterCommand(int socket_id, string nickname) {
 	try {
 		// already registered
-		if (players.count(socket_id))
+		if (descriptor.count(socket_id))
 			throw("400 You've already registered in a game.\n");
 
 		// validate nickname
@@ -243,87 +217,88 @@ void Server::handleRegisterRequest(int socket_id, string nickname) {
 			throw("400 Nickname is invalid. Please try again.\n");
 
 		// check if nickname is already taken
-		for (auto p: players)
-			if (p.second->getNickname() == nickname)
+		for (auto p: descriptor)
+			if (p.second.first->getNickname() == nickname)
 				throw("400 Nickname is already taken. Please try again.\n");
 
 		// register nickname
 		Player* player = new Player(socket_id, nickname);
+		Game* game = nullptr;
 		for (int id = 0; id < games.size(); ++id)
 			if (games[id]->addPlayer(player)) {
-				player->setGame(games[id]);
+				descriptor[socket_id] = { player, game = games[id] };
 				break;
 			}
 
 		// if no game is available, create a new game
-		if (player->getGame() == nullptr) {
+		if (game == nullptr) {
 			games.push_back(new Game(player));
-			player->setGame(games[games.size() - 1]);
+			descriptor[socket_id] = { player, game = games[games.size() - 1] };
 		}
-
-		players[socket_id] = player;
 
 		// send success message
 		string message{"200 Nickname registered successfully.\n"};
 		send(socket_id, message.c_str(), message.length(), 0);
 
-		if (player->getGame()->isPlaying())
-			player->getGame()->notifyAllPlayers();
+		if (game->isPlaying())
+			game->notifyAllPlayers();
 	} catch (const char* message) {
 		send(socket_id, message, strlen(message), 0);
 		return;
 	}
 }
 
-void Server::handleInGameRequest(int socket_id) {
-	if (!players.count(socket_id))
+void Server::handleInGameCommand(int socket_id) {
+	if (!descriptor.count(socket_id))
 		throw("400 You must register first.\n");
-	Player* player = players[socket_id];
-	if (!player->getGame()->isPlaying())
+	auto d = descriptor[socket_id];
+	if (!d.second->isPlaying())
 		throw("400 The game has not started.\n");
-	if (player->getStatus() != Player::INTURN)
+	if (!d.first->isInTurn())
 		throw("400 Not your turn.\n");
 }
 
-void Server::handleAnswerRequest(int socket_id, string answer) {
+void Server::handleAnswerCommand(int socket_id, string answer) {
 	try {
-		handleInGameRequest(socket_id);
+		handleInGameCommand(socket_id);
 		if (answer.length() != 1 || 
 			toupper(answer[0]) < 'A' || 'D' < toupper(answer[0])
 		)
 			throw("400 Invalid answer. Answer must be A, B, C or D (case insensitive).\n");
 		
-		Player* player = players[socket_id];
+		auto d = descriptor[socket_id];
 		string message;
-		if (player->getGame()->submitAnswer(answer[0]))
+		if (d.second->submitAnswer(answer[0]))
 			message = "200 Correct answer.\n";
 		else
 			message = "200 Incorrect answer. You've been disqualified.\n";
 		send(socket_id, message.c_str(), message.length(), 0);
-		player->getGame()->notifyAllPlayers();
+		d.second->notifyAllPlayers();
+		if (d.second->isFinished())
+			remove(d.second);
 	} catch (const char* message) {
 		send(socket_id, message, strlen(message), 0);
 		return;
 	}
 }
 
-void Server::handleMoveRequest(int socket_id) {
+void Server::handleMoveCommand(int socket_id) {
 	try {
-		handleInGameRequest(socket_id);
-		Player* player = players[socket_id];
-		player->getGame()->moveTurn();
+		handleInGameCommand(socket_id);
+		auto d = descriptor[socket_id];
+		d.second->moveTurn();
 		string message = "200 Move turn sucessfully.\n";
 		send(socket_id, message.c_str(), message.length(), 0);
-		player->getGame()->notifyAllPlayers();
+		d.second->notifyAllPlayers();
 	} catch (const char* message) {
 		send(socket_id, message, strlen(message), 0);
 		return;
 	}
 }
 
-void Server::handleLogoutRequest(int socket_id) {
+void Server::handleLogoutCommand(int socket_id) {
 	try {
-		if (!players.count(socket_id))
+		if (!descriptor.count(socket_id))
 			throw("400 You haven't registered to any game.\n");
 		remove(socket_id);
 		string message = "200 Logout successfully.\n";
@@ -332,4 +307,34 @@ void Server::handleLogoutRequest(int socket_id) {
 		send(socket_id, message, strlen(message), 0);
 		return;
 	}
+}
+
+void Server::handleInfoCommand(int socket_id) {
+	string message;
+	if (descriptor.count(socket_id))
+		message = "200\n" + descriptor[socket_id].first->getInfoMessage();
+	else
+		message = "200 You haven't registered to any game.\n";
+	send(socket_id, message.c_str(), message.length(), 0);
+}
+
+void Server::remove(Game* game) {
+	auto ptr = find(games.begin(), games.end(), game);
+	if (ptr == games.end())
+		throw("500 Somehow this game does not exist.\n");
+
+	vector<Player*> in_game = game->getInGamePlayers();
+	for (Player* player: in_game)
+		descriptor.erase(player->getSocketId());
+
+	delete game;
+	games.erase(ptr);
+}
+
+void Server::remove(int socket_id) {
+	auto d = descriptor[socket_id];
+	descriptor.erase(socket_id);
+	d.second->remove(d.first);
+	if (d.second->isFinished())
+		remove(d.second);
 }

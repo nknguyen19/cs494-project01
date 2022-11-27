@@ -12,43 +12,13 @@ class Game {
 private:
     int status;
 
-    int maxNPlayers; // max number of players
-    int nInGame; // number of in-game players
-    int curPlayerIndex; // current playing player index
+    int max_players; // max number of players
+    int n_playing; // number of in-game players
+    int cur_player_id; // current playing player index
     vector<Player*> players;
     
-    int curQuestionIndex; // current question index
+    int cur_question_id; // current question index
     vector<Question*> questions;
-
-public:
-    static const int WAITING = 0;
-    static const int PLAYING = 1;
-    static const int FINISHED = 2;
-
-    Game();
-    Game(Player* player);
-    ~Game();
-
-    int getInQueueNumber();
-
-    /*
-    * Randomly select a set of questions from the question bank
-    * Number of questions is at least 3 times the number of players
-    */
-    void initQuestions();
-
-    /*
-    * Add a player to the game
-    * Return true if the player is added successfully
-    * Return false if the game is full
-    * If the game is full, the status of the game will be changed to PLAYING 
-    */
-    bool addPlayer(Player* player);
-
-    /*
-    * Start the game
-    */
-    void start();
 
     /*
     * Get the full game status for the client to display
@@ -69,42 +39,32 @@ public:
     *   <option C>
     *   <option D>
     */
-    string getGameStatus();
+    string getStatusMessage();
 
-    /*
-    * send message to all players in the game
-    */
+public:
+    static const int WAITING = 0;
+    static const int PLAYING = 1;
+    static const int FINISHED = 2;
+
+    Game();
+    Game(Player* player);
+    ~Game();
+
+    bool addPlayer(Player* player);
+    void initQuestions();
+    void start();
     void notifyAllPlayers();
 
-
-    /*
-    * Return true if the game is started
-    */
+    bool isWaiting();
     bool isPlaying();
     bool isFinished();
 
-    /*
-    * Return the current number of players in this game
-    */
-    int getInGameNumber();
-
     void nextPlayer();
-
-    /**
-    * Return true if the answer is correct.
-    * Note that the whole game status after checking answer is also changed.
-    */
     bool submitAnswer(char answer);
-
+    void moveTurn();
     void remove(Player* player);
 
-    void setStatus(int status);
-
-    Player* currentPlayer();
-
-    void moveTurn();
-
-    vector<Player*> getInQueuePlayers();
+    vector<Player*> getInGamePlayers();
 };
 
 #endif // GAME_SERVER_H

@@ -9,10 +9,9 @@ class Game;
 
 class Player {
 private:
-    int socket; // socket id
-    Game* game;
+    int socket_id;
     string nickname;
-    int status; // in-game status
+    int status;
     int move_turn;
 
 public:
@@ -25,16 +24,17 @@ public:
     ~Player();
 
     int getSocketId();
-    Game* getGame();
     string getNickname();
     int getStatus();
     int getMoveTurn();
+    string getInfoMessage();
 
-    void setGame(Game* game);
+    bool isInTurn();
+    bool isWaiting();
+    bool isDisqualified();
+
     void setStatus(int status);
     void useMoveTurn();
-
-    void logOut();
 };
 
 #endif

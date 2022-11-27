@@ -24,14 +24,18 @@ private:
     fd_set readfds;
 
     vector<Game*> games;
-    map<int, Player*> players;
-    // mapping client socket id to the correspond pair (game id, in game player id)
+    map<int, pair<Player*, Game*>> descriptor;
+    // mapping client socket id to the correspond pair of pointers
 
-    void handleRegisterRequest(int socket_id, string nickname);
-    void handleInGameRequest(int socket_id);
-    void handleAnswerRequest(int socket_id, string answer);
-    void handleMoveRequest(int socket_id);
-    void handleLogoutRequest(int socket_id);
+    void handleRegisterCommand(int socket_id, string nickname);
+    void handleInGameCommand(int socket_id);
+    void handleAnswerCommand(int socket_id, string answer);
+    void handleMoveCommand(int socket_id);
+    void handleLogoutCommand(int socket_id);
+    void handleInfoCommand(int socket_id);
+
+    void remove(Game* game);
+    void remove(int socket_id);
 
 public:
     Server();
@@ -41,10 +45,7 @@ public:
     * @brief: start the server
     */
     void run();
-    void processRequest(string request, int socket_id);
-
-    void remove(Game* game);
-    void remove(int client_socket);
+    void executeCommand(string message, int socket_id);
 };
 
 #endif
