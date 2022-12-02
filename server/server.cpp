@@ -143,7 +143,7 @@ void Server::run() {
 			}
 
 			// send new connection greeting message
-			send(new_socket, "OK", 2, 0);
+			send(new_socket, "OK\n", 3, 0);
 		}
 
 		// else its some IO operation on some other socket
@@ -165,7 +165,7 @@ void Server::run() {
 						<< ntohs(address.sin_port) << endl;
 
 					// If he's in some game, remove him
-					remove(sd);
+					if (descriptor.count(sd)) remove(sd);
 
 					// Close the socket and mark as 0 in list for reuse
 					close(sd);
