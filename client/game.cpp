@@ -82,6 +82,14 @@ void Game::update(string gameStatus)
         if (status == GAME_PLAYING) {
             // get question
             getline(f, line);
+            int numberOfQuestions = stoi(line);
+            this->numberOfQuestions = numberOfQuestions;
+
+            getline(f, line);
+            int currentQuestionId = stoi(line);
+            this->currentQuestionId = currentQuestionId;
+
+            getline(f, line);
             string question = line;
 
             // get answers
@@ -182,4 +190,14 @@ string Game::getResult()
 bool Game::isEliminated()
 {
     return this->getMyPlayer().status == PLAYER_DISQUALIFIED;
+}
+
+int Game::getNumberOfQuestions()
+{
+    return this->numberOfQuestions;
+}
+
+int Game::getCurrentQuestionId()
+{
+    return this->currentQuestionId;
 }

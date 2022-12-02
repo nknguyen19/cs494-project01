@@ -36,6 +36,8 @@ private:
     bool isMyTurn;
     int numberOfPlayers;
     int numberOfPlayingPlayers;
+    int numberOfQuestions;
+    int currentQuestionId;
     Question *currentQuestion;
     string myNickname;
     string winner;
@@ -50,6 +52,8 @@ public:
     bool getIsMyTurn();
     int getNumberOfPlayers();
     int getNumberOfPlayingPlayers();
+    int getNumberOfQuestions();
+    int getCurrentQuestionId();
     Question* getCurrentQuestion();
     string getMyNickname();
     bool isPlaying();

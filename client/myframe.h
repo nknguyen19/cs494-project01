@@ -67,7 +67,10 @@ enum
     ID_Answer = 21,
     ID_MyStatus = 30,
     ID_Result = 31,
-    ID_MoveButton = 32
+    ID_MoveButton = 32,
+    ID_NumberOfPlayer = 40,
+    ID_NumberOfQuestion = 41,
+    ID_EliminatedIcon = 42,
 };
 
 #endif

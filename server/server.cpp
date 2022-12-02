@@ -143,7 +143,7 @@ void Server::run() {
 			}
 
 			// send new connection greeting message
-			send(new_socket, "OK\n", 3, 0);
+			send(new_socket, "OK", 2, 0);
 		}
 
 		// else its some IO operation on some other socket

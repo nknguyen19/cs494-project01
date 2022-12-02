@@ -316,11 +316,14 @@ void MyFrame::OnLogout(wxCommandEvent &event)
 
 void MyFrame::OnNewGame(wxCommandEvent &event)
 {
-    if (!this->game->isFinished()) {
+    if (this->game && !this->game->isFinished()) {
         wxLogMessage("Game is not finished");
         return;
     }
-    this->showRegisterFrame();
+    if (this->connectServer())
+    {
+        this->showRegisterFrame();
+    }
 }
 
 void MyFrame::handleCorrectAnswer()
@@ -345,10 +348,12 @@ void MyFrame::handleWrongAnswer()
 void MyFrame::showGreetingsFrame()
 {
     clearFrame();
-    this->SetSize(400, 300);
-    wxStaticText *helloText = new wxStaticText(this, ID_Hello, "Hello, ", wxPoint(10, 10), wxSize(100, 20));
+    this->SetSize(500, 300);
+    wxStaticText *helloText = new wxStaticText(this, ID_Hello, "Hello, Welcome to\nWHO WANTS TO BE A MILLIONAIRE!", wxPoint(10, 10), wxSize(500, 60));
+    helloText->SetFont(wxFont(16, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+    helloText->SetForegroundColour(wxColour(0, 0, 0));
     controls.push_back(helloText);
-    wxButton *startButton = new wxButton(this, ID_StartButton, "Start", wxPoint(10, 40), wxSize(100, 20));
+    wxButton *startButton = new wxButton(this, ID_StartButton, "Start", wxPoint(200, 100), wxSize(100, 20));
     controls.push_back(startButton);
     Bind(wxEVT_BUTTON, &MyFrame::OnStart, this, ID_StartButton);
 }
@@ -366,7 +371,6 @@ void MyFrame::showRegisterFrame()
 
 void MyFrame::displayPlayers() {
     vector<Player*> players = this->game->getPlayers();
-    wxBoxSizer *playerBox = new wxBoxSizer(wxVERTICAL);
     for (int i = 0; i < players.size(); i++)
     {
         Player *player = players[i];
@@ -378,10 +382,32 @@ void MyFrame::displayPlayers() {
                                             wxBORDER_NONE);
         player_name->SetBackgroundColour(wxColor(26, 26, 26));
         player_name->SetWindowStyle(wxBORDER_DOUBLE);
-        player_name->SetFont(wxFont(15, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_LIGHT));
-        // playerBox->Add(player_name, 1, wxALIGN_CENTER_HORIZONTAL | wxALIGN_CENTER_VERTICAL);
+        player_name->SetFont(wxFont(15, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_BOLD));
         controls.push_back(player_name);
+
+        if (player->status == Game::PLAYER_DISQUALIFIED){
+            // display eliminated icon
+            wxStaticText *eliminated_icon = new wxStaticText(this, 
+                                                            ID_EliminatedIcon, 
+                                                            "X", 
+                                                            wxPoint(200, 110 + i * 55), 
+                                                            wxSize(50, 50));
+            eliminated_icon->SetFont(wxFont(20, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_LIGHT));
+            eliminated_icon->SetForegroundColour(wxColor(255, 0, 0));
+            controls.push_back(eliminated_icon);
+        }
     }
+    wxStaticText *numberOfPlayer = new wxStaticText(
+        this, 
+        ID_NumberOfPlayer, 
+        "Number of player(s): " + 
+        (!this->game->isWaiting() ? (to_string(this->game->getNumberOfPlayingPlayers()) + "/") : "") + 
+        to_string(players.size()), 
+        wxPoint(30, 470), 
+        wxSize(200, 50)
+    );
+    numberOfPlayer->SetForegroundColour(wxColour(0, 0, 0));
+    controls.push_back(numberOfPlayer);
 }
 
 void MyFrame::displayQuestion() {
@@ -405,6 +431,16 @@ void MyFrame::displayQuestion() {
         controls.push_back(answer_button);
         Bind(wxEVT_BUTTON, &MyFrame::OnAnswer, this, ID_Answer + i);
     }
+
+    wxStaticText *numberOfQuestion = new wxStaticText(
+        this, 
+        ID_NumberOfQuestion, 
+        "Question " + to_string(this->game->getCurrentQuestionId() + 1) + "/" + to_string(this->game->getNumberOfQuestions()), 
+        wxPoint(430, 470), 
+        wxSize(200, 50)
+    );
+    numberOfQuestion->SetForegroundColour(wxColour(0, 0, 0));
+    controls.push_back(numberOfQuestion);
 }
 
 void MyFrame::displayeStatus() {
@@ -412,7 +448,7 @@ void MyFrame::displayeStatus() {
         string currentPlayingPlayer = this->game->getCurrentPlayingPlayer().nickname;
         wxStaticText *myStatusText = new wxStaticText(this, 
                                                     ID_MyStatus, 
-                                                    this->game->isWaiting() ? "Waiting for other player" :
+                                                    this->game->isWaiting() ? "Waiting for other players" :
                                                     (this->game->getIsMyTurn() ? "Your turn" : (currentPlayingPlayer + "'s turn")),
                                                     wxPoint(50, 50), 
                                                     wxSize(500, 50));

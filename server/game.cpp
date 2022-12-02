@@ -31,8 +31,12 @@ string Game::getStatusMessage() {
         message += player->getNickname() + '\n'
             + to_string(player->getStatus()) + '\n'
             + to_string(player->getMoveTurn()) + '\n';
-    if (this->status == PLAYING)
+    if (this->status == PLAYING) 
+    {
+        message += to_string(this->questions.size()) + '\n';
+        message += to_string(this->cur_question_id) + '\n';
         message += this->questions[this->cur_question_id]->getQuestion() + '\n';
+    }
     else if (this->status == FINISHED)
         message += "Game finished. " + players[cur_player_id]->getNickname() + " is the winner!\n";
     return message;
