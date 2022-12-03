@@ -8,6 +8,7 @@
 MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Hello World")
 {
     // connectServer();
+    this->SetBackgroundColour(wxColour(*wxBLACK));
     this->game = nullptr;
     this->SetBackgroundColour(*wxLIGHT_GREY);
     this->SetForegroundColour(*wxWHITE);
@@ -354,6 +355,7 @@ void MyFrame::showGreetingsFrame()
     helloText->SetForegroundColour(wxColour(0, 0, 0));
     controls.push_back(helloText);
     wxButton *startButton = new wxButton(this, ID_StartButton, "Start", wxPoint(200, 100), wxSize(100, 20));
+    startButton->SetFont(wxFont(12, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     controls.push_back(startButton);
     Bind(wxEVT_BUTTON, &MyFrame::OnStart, this, ID_StartButton);
 }
@@ -381,6 +383,7 @@ void MyFrame::displayPlayers() {
                                             wxSize(200, 50),
                                             wxBORDER_NONE);
         player_name->SetBackgroundColour(wxColor(26, 26, 26));
+        player_name->SetForegroundColour(wxColor(255, 255, 255));
         player_name->SetWindowStyle(wxBORDER_DOUBLE);
         player_name->SetFont(wxFont(15, wxFONTFAMILY_DECORATIVE, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_BOLD));
         controls.push_back(player_name);
@@ -401,8 +404,7 @@ void MyFrame::displayPlayers() {
         this, 
         ID_NumberOfPlayer, 
         "Number of player(s): " + 
-        (!this->game->isWaiting() ? (to_string(this->game->getNumberOfPlayingPlayers()) + "/") : "") + 
-        to_string(players.size()), 
+        to_string(this->game->getNumberOfPlayingPlayers()) + "/" + to_string(this->game->getNumberOfPlayers()), 
         wxPoint(30, 470), 
         wxSize(200, 50)
     );

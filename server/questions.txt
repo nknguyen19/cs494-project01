@@ -1,127 +1,601 @@
-21
-Photoelectric effect is associated with?
-Non-Metals
-Gases
-Metals
-Photosynthesis
+100
+Edward 5th and his brother Richard are known as 'The Princes in the...'?
+Tabloids
+Palace
+Drink
+Tower
+D
+Edward Jenner discovered the vaccination for smallpox by infecting a boy with what disease?
+Goatpox
+Horsepox
+Cowpox
+Pigpox
 C
-Which of these is not a JavaScript library? 
-jQuery
-Angular
-React
-Immutablejs
+What are the playing pieces in a game of tiddlywinks called?
+Tiddles
+Counters
+Winks
+Disks
+C
+Which member of the Royal Family is the Earl of Merioneth?
+Duke of York
+Prince Philip
+Duke of Kent
+Prince Charles
 B
-Which is a CSS framework? 
-Popper
-Modernizr
-Bootstrap
-Sass
-C
-Which language is closer to the hardware? 
-Python
-Hash
-C++
-JavaScript
-C
-Who is the creator of Python?
-Guido van Rossium
-Brendan Eich
-Google Inc
-Dan Abrahmov
-A
-Colourless and odourless is the property of? 
-Calcium
-Ammonium
-Chlorine
-Methane
-D
-Who created the C programming language? 
-Ken Jones
-Dennis Ritchie
-Bjarnne Stautroup
-Tom Smith
+In which classic film did the Mini Cooper steal the show?
+Bullitt
+The Italian Job
+Cool Hand Luke
+The Sting
 B
-What is the full meanInGame of PHP?
-Hypertext Preprocessor
-Pre Hypertext Processor
-Page High Power
-Power High Page
-A
-In JavaScript which is an abstract data type? 
-Array
-List
-Symbol
-String
+Written by Cole Porter was the song 'what the Beguine'?
+Beget
+Begone
+Beggar
+Begin
+D
+What name is given to the covered arcade in a monastery?
+Chapterhouse
+Refectory
+Cloister
+Dormitory
+C
+Which sport does not involve the use of racquets?
+Badminton
+Golf
+Squash
+Tennis
 B
-Which is a PHP framework? 
-Composer
-WebGl
-Mongoose
-Laravel
-D
-Which is the largest country by population? 
-Russia
-United statuss of America
-China
-Japan
+Which of these is a tool used for making holes for seeds or plants?
+Dubber
+Dobber
+Dibber
+Dabber
 C
-Flourine element is known as?
-Halogen
-Ester
-Rare gas
-Ethanol
-A
-Which of these is not a framework for building Android application? 
-React Native
-Ionic
-Phonegap
-Kotlin
-D
-Which of these is not a metal? 
-Calcium
-Aluminium
-Argon
-Sodium
-C
-Chai is a tool used for? 
-Testing
-Module bundling
-DesignInGame
-Data Science
-A
-Which is not used for module bundling and task runnInGame? 
-Webpack
-Mocha
-Gulp
-Grunt
+In which code are dots and dashes used to represent characters?
+Frost
+Morse
+Wycliffe
+Poirot
 B
-Tkinter is a python library used for?
-Artificial Intelligence
-Machine LearnInGame
-Desktop development
-Mobile development
-C
-Golang was created at?
-Facebook
-Zeit
-Microsoft
-Google
-D
-Scrapy is a framework used for?
-Web crawling
-Game development
-Network sniffing
-Web development
+Which member of the Royal Family was born in MCMXLVIII?
+Prince Charles
+Princess Anne
+Prince Andrew
+Prince Edward
 A
-Nodejs is usually known for its? 
-ASpeed
-Efficiency
-Simplicity
-Asyncronousity
+What are the small reflectors on roads called?
+Dog's-eyes
+Horse's-eyes
+Cow's-eyes
+Cat's-eyes
 D
-The largest planet is? 
-Saturn
-Jupiter
-Earth
+Which sport is also a pumpkin-like vegetable, but smaller?
+Cricket
+Golf
+Squash
+Tennis
+C
+What name is given to the device which releases clay pigeons for shooting?
+Trap
+Snare
+Noose
+Net
+A
+Which of these is a town in Derbyshire?
+Mattie
+Matsecure
+Matfasten
+Matlock
+D
+Which character was first played by Arnold Schwarzenegger in a 1984 film?
+The Demonstrator
+The Instigator
+The Investigator
+The Terminator
+D
+In which country are the Sinhalese the major ethnic group?
+Somalia
+Sri LankSri Lanka
+Sudan
+Iran
+0
+Eggs are the main ingredient in which dish?
+Chowder
+Omelette
+Pizza
+Souvlaki
+B
+Which member of the Royal Family was married in June 1999?
+Princess Anne
+Prince Edward
+Duke of Gloucester
+Prince Andrew
+B
+Which sport is controlled by the National Hunt in the UK?
+Fishing
+Shooting
+Steeplechasing
+Archery
+C
+Which character was played by John Travolta in the film 'Get Shorty'?
+Icy Lober
+Chili Palmer
+Coldi Soler
+Freezy Shoulder
+B
+Which of these is a town in Herefordshire?
+Piscesminster
+Taurusminster
+Leominster
+Virgominster
+C
+Eglantine is a species of which plant?
+Ivy
+Hollyhock
+Rose
+Iris
+C
+In which country did flamenco dancing originate?
+Spain
+France
+Italy
+Greece
+A
+You might ask someone who won't speak: what got your tongue?
+Cat
+Dog
+Rat
+Pig
+A
+What are the staff at Pontin's holiday camps called?
+Redcoats
+Greencoats
+Yellowcoats
+Bluecoats
+D
+Which member of the Royal Family was once dubbed the Duchess of Pork?
+Sarah Chatto
+Serena Linley
+Sarah Ferguson
+Zara Phillips
+C
+Which character was played by Victoria Wood in 'dinnerladies'?
+Doreen
+Sheila
+BrendBrenda
+Maureen
+0
+What name is given to the exterior front or face of a building?
+Portico
+Cloister
+Facade
+Entrance
+C
+Which of these is a town in north-west Wales?
+Rocket
+Bangor
+Sparkler
+Cracker
+B
+Egypt, Sudan and Eritrea all have shores on which sea?
+Black Sea
+Red SeRed Sea
+Caspian Sea
+Arabian Sea
+0
+Zeus is the king of the gods in which mythology?
+Egyptian
+Greek
+Hindu
+Norse
+B
+Someone with a disreputable character is often referred to as a 'bad ...'?
+Sausage
+Egg
+Bacon
+Bean
+B
+What are the two days a year called, when the sun crosses the celestial equator?
+Equity
+Equitable
+Equinox
+Equipoise
+C
+Which member of the weasel family is also the colour black in heraldry?
+Badger
+Ermine
+Otter
+Sable
+D
+Which sport is played by the Edmonton Oilers?
+Basketball
+Baseball
+American football
+Ice hockey
+D
+What name is given to the extra thumblike toe on a dog's front feet?
+Rainclaw
+Dewclaw
+Mistclaw
+Fogclaw
+B
+What are traditionally eaten on Shrove Tuesday?
+Eggs
+Frankfurters
+Oranges
+Pancakes
+D
+Which of these is a town in northern Scotland?
+Candle
+Flame
+Tallow
+Wick
+D
+Eighteen players per side take the field in which football code?
+Australian Rules
+Rugby league
+Rugby union
+Soccer
+A
+In which country did panama hats originate?
+Equador
+Peru
+Panama
+Belize
+A
+Which chemical element was named after a planet in our solar system?
+Venusium
+Jupiterium
 Uranium
+Saturnium
+C
+What are winkle-pickers?
+Snails
+Hair pins
+Shoes
+Flowers
+C
+Something askew is said to be skew-what?
+Reek
+Smell
+Pong
+Whiff
+D
+Which of these is a town on the Lleyn Peninsula in north-west Wales?
+Abershoe
+Abersoch
+Abersandal
+Abertrainer
 B
+In which country did the 1974 'Rumble in the Jungle' take place?
+Brazil
+Nigeria
+Zaïre
+Ecuador
+C
+El Alamein is in which country?
+Syria
+Lebanon
+Egypt
+Saudi Arabia
+C
+Which sport uses the Christmas Tree starting system?
+Formula 1
+Motocross
+Drag racing
+Car rallying
+C
+Which chemist gave his name to a method of heat treatment for milk?
+Fleming
+Curie
+Pasteur
+Davy
+C
+Which metal lends its name to a US five-cent coin?
+Iron
+Zinc
+Nickel
+Tin
+C
+What name is given to the fee charged on borrowed money?
+Interest
+Apathy
+Disdain
+Indifference
+A
+Which metallic element is also the name of a US coin?
+Copper
+Nickel
+Iron
+Silver
+B
+Something having toothlike projections is said to be which of these?
+Dentary
+Denton
+Dentate
+Dentine
+C
+Which of these is a trademark for a public address system?
+Tanner
+Tandem
+Tandoori
+Tannoy
+D
+Zog I was king of which country from 1928 to 1939?
+Albania
+Bulgaria
+Yugoslavia
+Romania
+A
+Which sport was called 'the little brother of war' by the Cherokees?
+Hockey
+Lacrosse
+Archery
+Boxing
+B
+What name is given to the first 10 amendments to the Constitution of the USA?
+Ben of Rights
+Barry of Rights
+Bill of Rights
+Brian of Rights
+C
+What are you said to bet when you are absolutely certain of something?
+Bottom pound
+Bottom dollar
+Bottom euro
+Bottom rupee
+B
+Which military hero has the same name as a hold used in wrestling?
+Sherman
+Nelson
+Montgomery
+Wellington
+B
+Something mediocre can be described as 'no great ...'?
+Shakes
+Quivers
+Wobbles
+Trembles
+A
+Something not in a house or building is said to be out of what?
+Windows
+Walls
+Floors
+Doors
+D
+In which country did the game mah-jong originate?
+New Zealand
+ChinChina
+Turkey
+India
+0
+Which chess piece has the smallest size and value?
+Bishop
+Knight
+Pawn
+Rook
+C
+What are you said to break, when you make friends with a stranger?
+The ice
+The snow
+The hail
+The frost
+A
+What name is given to the first Monday after Epiphany?
+Plough Monday
+Ascension Monday
+Rogation Monday
+Trinity Monday
+A
+Which sport was originally called 'mintonette'?
+Basketball
+Badminton
+Volleyball
+Curling
+C
+Emus are native to which country?
+Argentina
+AustraliAustralia
+Albania
+Austria
+0
+Which model of Ford motor car features in the NATO alphabet?
+Sierra
+Escort
+Fiesta
+Mondeo
+A
+Something that fails dismally is said to go down like a lead what?
+Balloon
+Cloud
+Feather
+Pencil
+A
+What are you said to do to a habit when you break it?
+Throw it
+Punch it
+Kick it
+Eat it
+C
+Which children's fictional character is known as the 'Fat Owl of the Remove'?
+Tweedledum
+William Brown
+Billy Bunter
+Tom Brown
+C
+What name is given to the German air force?
+Blitzkrieg
+Luftwaffe
+Panzer
+Messerschmidt
+B
+Which Chinese martial art was popularised in the films of Bruce Lee?
+Dim sum
+Chop suey
+Kung fu
+Ho Chi Minh
+C
+What are you said to do to a ship's anchor when raising it in preparation for departure?
+Weigh it
+Measure it
+Sling it
+Strike it
+A
+Ending in c1000 BC, what age succeeded the Stone Age?
+Bronze
+Golden
+Iron
+Silver
+A
+Which of these is a tuning wire found in early crystal radio sets?
+Cat's whisker
+Rabbit's whisker
+Rat's whisker
+Hare's whisker
+A
+Something unfair or unsporting is said to be 'not ...'?
+Tennis
+Football
+Cricket
+Rugby
+C
+In which country did the liqueur Tia Maria originate?
+Jamaica
+Cuba
+Portugal
+Brazil
+A
+Which sport would interest a toxophilite?
+Archery
+Skeet shooting
+Diving
+Orienteering
+A
+What name is given to the narrow waterways found in Norway?
+Fjords
+Vauxhalls
+Nissans
+Hondas
+A
+Which Monopoly property is one of the orange ones?
+Bond Street
+Coventry Street
+Fleet Street
+Vine Street
+D
+Which city does not host the Three Choirs Festival?
+Worcester
+Chester
+Hereford
+Gloucester
+B
+Which month of the Muslim year is Ramadan?
+1st.
+3rd
+6th
+9th
+D
+England's David Beckham is a superstar in which sport?
+Golf
+Rugby
+Soccer
+Tennis
+C
+Which of these is a two-way radio link which became popular in the UK during the 1970s?
+TC
+AD
+VA
+CB
+D
+In which country did the post of Ombudsman originate?
+The Netherlands
+UK
+Sweden
+Austria
+C
+Something very difficult to work out is known as what kind of puzzle?
+Chinese
+Japanese
+Russian
+Irish
+A
+Which sport would you be playing if you were competing on the ATP Tour?
+Tennis
+Golf
+Cricket
+Bowls
+A
+What name is given to the person who traditionally attends the groom on his wedding day?
+Best man
+Top man
+Old man
+Poor man
+A
+Which Moroccan city was the title of a 1942 film starring Humphrey Bogart?
+Casablanca
+Marrakesh
+Rabat
+Fez
+A
+Which city hosted the 2000 Olympic Games?
+Sydney
+Adelaide
+Brisbane
+Melbourne
+A
+In which country does 1 colón equal 100 centimos?
+Brazil
+Mexico
+Colombia
+Costa Rica
+D
+Which sports retailing company was founded by Adolf Dassler?
+Nike
+Lacoste
+Adidas
+Reebok
+C
+Something with both good and bad qualities is said to be a curate's what?
+Leg
+Rug
+Egg
+Dog
+C
+What name is given to the physical components of a computer?
+Shareware
+Software
+Hardware
+Freeware
+C
+What are you said to lose if you become too afraid to do something?
+Marbles
+Nerve
+Plot
+Temper
+B
+Erin is a poetic name for where?
+Wales
+Cornwall
+Ireland
+Normandy
+C
+Which city hosted the first modern Olympic Games in 1896?
+Athens
+Paris
+London
+Berlin
+A
+Which motorway links the two largest cities in the United Kingdom?
+M10
+M20
+M30
+M40
+D
+In which country is Rio de Janeiro?
+Brazil
+Colombia
+Peru
+Chile
+A

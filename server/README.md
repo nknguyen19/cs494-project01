@@ -60,15 +60,17 @@ Note that whatever value comes after MOVE command code will be ignored.
 # Server Message Formats
 ## Game status Updating
 ```
-<game_status>
-<no_players>
-<max_no_players>
+<game status>
+<number of player in game>
+<total number of player>
 <player_1_nickname> <player_1_status> <player_1_can_move_turn>
 ...
 <player_n_nickname> <player_n_status> <player_n_can_move_turn>
-<current_question>
-<answer_A>
-<answer_B>
-<answer_C>
-<answer_D>
+<number of questions>
+<current question index>
+<current question>
+<option_A>
+<option_B>
+<option_C>
+<option_D>
 ```

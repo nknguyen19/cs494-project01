@@ -13,7 +13,8 @@ using namespace std;
 Game::Game() : status(WAITING), max_players(DEFAULT_MAX_PLAYERS) { }
 
 Game::Game(Player* player) :
-    status(WAITING), max_players(DEFAULT_MAX_PLAYERS) {
+    status(WAITING){
+    this->max_players = random(2, 10);
     this->players.push_back(player);
 }
 
@@ -25,8 +26,13 @@ Game::~Game() {
 string Game::getStatusMessage() {
     string message = "";
     message += to_string(this->status) + '\n';
-    message += to_string(this->n_playing) + '\n';
-    message += to_string(this->players.size()) + '\n';
+    if (this->status == WAITING) {
+        message += to_string(this->players.size()) + '\n';
+        message += to_string(this->max_players) + '\n';
+    } else {
+        message += to_string(this->n_playing) + '\n';
+        message += to_string(this->players.size()) + '\n';
+    }
     for (auto player: players)
         message += player->getNickname() + '\n'
             + to_string(player->getStatus()) + '\n'

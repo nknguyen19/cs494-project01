@@ -55,7 +55,9 @@ void Game::update(string gameStatus)
         this->numberOfPlayers = numberOfPlayers;
 
         // get players
-        for (int i = 0; i < numberOfPlayers; i++) {
+        int n = status == GAME_WAITING ? numberOfPlayingPlayers : numberOfPlayers;
+        cout << n << endl;
+        for (int i = 0; i < n; i++) {
             getline(f, line);
             string nickname = line;
 

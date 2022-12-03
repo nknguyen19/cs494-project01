@@ -2,7 +2,6 @@
 #ifndef WX_PRECOMP
     #include <wx/wx.h>
 #endif
-#include "client.h"
 #include "myframe.h"
 #include <wx/socket.h>
 
@@ -17,9 +16,6 @@ private:
 // 
 public:
     virtual bool OnInit();
-    // void connectSerever();
-    // void sendMessage(string message);
-    // string receiveMessage();
 };
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
