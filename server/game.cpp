@@ -10,11 +10,10 @@ using namespace std;
 
 #define DEFAULT_MAX_PLAYERS 3
 
-Game::Game() : status(WAITING), max_players(DEFAULT_MAX_PLAYERS) { }
+Game::Game() : status(WAITING), max_players(random(2, 10)) { }
 
 Game::Game(Player* player) :
-    status(WAITING){
-    this->max_players = random(2, 10);
+    status(WAITING), max_players(random(2, 10)) {
     this->players.push_back(player);
 }
 
