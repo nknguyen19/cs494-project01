@@ -239,7 +239,6 @@ void MyFrame::OnAnswer(wxCommandEvent &event)
         }
     }
     this->game->update(game_status);
-    this->game->update(game_status);
     if (status == "200") {
         if (content == CORRECT) {
             this->handleCorrectAnswer();
