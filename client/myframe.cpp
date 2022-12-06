@@ -190,6 +190,8 @@ void MyFrame::OnRegister(wxCommandEvent &event)
             }
         }
         this->game->update(response);
+        this->SetSize(800, 600);
+
         this->showGameFrame();
     }
     else
@@ -511,7 +513,6 @@ void MyFrame::displayeStatus() {
 
 void MyFrame::showGameFrame()
 {
-    this->SetSize(800, 600);
     // display timer
     if (this->timerText != NULL) {
         this->timerText->Destroy();
