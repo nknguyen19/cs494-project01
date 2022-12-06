@@ -511,6 +511,7 @@ void MyFrame::displayeStatus() {
 
 void MyFrame::showGameFrame()
 {
+    this->SetSize(800, 600);
     // display timer
     if (this->timerText != NULL) {
         this->timerText->Destroy();
@@ -530,7 +531,6 @@ void MyFrame::showGameFrame()
     }
     else {
         clearFrame();
-        this->SetSize(800, 600);
 
         // display my status
         this->displayeStatus();
