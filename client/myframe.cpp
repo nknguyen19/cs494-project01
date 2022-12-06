@@ -12,6 +12,8 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Hello World")
     this->game = nullptr;
     this->SetBackgroundColour(*wxLIGHT_GREY);
     this->SetForegroundColour(*wxWHITE);
+    this->timer = new wxTimer(this, ID_Timer);
+    this->timerText = NULL;
     wxMenu *menuFile = new wxMenu;
     menuFile->Append(ID_Hello, "&Home\tCtrl-H",
                      "Back to home screen");
@@ -42,6 +44,7 @@ MyFrame::MyFrame() : wxFrame(nullptr, wxID_ANY, "Hello World")
     Bind(wxEVT_MENU, &MyFrame::OnExit, this, wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::OnNewGame, this, ID_NewGame);
     Bind(wxEVT_MENU, &MyFrame::OnLogout, this, ID_LogOut);
+    Bind(wxEVT_TIMER, &MyFrame::OnTimer, this, ID_Timer);
 }
 
 MyFrame::~MyFrame()
@@ -217,6 +220,10 @@ void MyFrame::OnAnswer(wxCommandEvent &event)
         wxLogMessage("You are eliminated");
         return;
     }
+
+    if (this->timer != NULL && this->timer->IsRunning()) {
+        this->timer->Stop();
+    }
     int id = event.GetId();
     int answer = id - ID_Answer;
     this->sendMessage("ANSWER " + string(1, char(answer + 'A')));
@@ -326,10 +333,24 @@ void MyFrame::OnNewGame(wxCommandEvent &event)
     }
 }
 
+void MyFrame::OnTimer(wxTimerEvent &event)
+{
+    this->time -= 1;
+    if (this->time == 0) {
+        this->timer->Stop();
+        wxLogMessage("Time is up!");
+        this->sendMessage("ANSWER TIMEOUT");
+    }
+    else {
+        this->timer->Start(1000);
+        this->showGameFrame();
+    }
+}
+
 void MyFrame::handleCorrectAnswer()
 {
     // wxLogStatus("Correct answer! Continue to next question");
-    wxLogMessage("Correct answer! Continue to next question");
+    // wxLogMessage("Correct answer! Continue to next question");
 }
 
 void MyFrame::handleWrongAnswer()
@@ -452,7 +473,7 @@ void MyFrame::displayeStatus() {
                                                     this->game->isWaiting() ? "Waiting for other players" :
                                                     (this->game->getIsMyTurn() ? "Your turn" : (currentPlayingPlayer + "'s turn")),
                                                     wxPoint(50, 50), 
-                                                    wxSize(500, 50));
+                                                    wxSize(400, 50));
         myStatusText->SetFont(wxFont(20, wxFONTFAMILY_SCRIPT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
         myStatusText->SetForegroundColour(wxColor(26, 26, 26));
         controls.push_back(myStatusText);
@@ -463,6 +484,11 @@ void MyFrame::displayeStatus() {
             wxButton *moveButton = new wxButton(this, ID_MoveButton, "Move", wxPoint(650, 30), wxSize(100, 50));
             controls.push_back(moveButton);
             Bind(wxEVT_BUTTON, &MyFrame::OnMoveTurn, this, ID_MoveButton);
+        }
+        if (this->game->getIsMyTurn() && (this->timer == NULL || !this->timer->IsRunning())) {
+            // display timer
+            this->timer->Start(1000);
+            this->time = 10;
         }
     }
 
@@ -485,19 +511,38 @@ void MyFrame::displayeStatus() {
 
 void MyFrame::showGameFrame()
 {
-    clearFrame();
-    this->SetSize(800, 600);
-
-    // display my status
-    this->displayeStatus();
-
-    // display players
-    this->displayPlayers();
-
-    if (this->game->isPlaying()) {
-        // display question
-        this->displayQuestion();
+    // display timer
+    if (this->timerText != NULL) {
+        this->timerText->Destroy();
+        this->timerText = NULL;
     }
+
+    if (this->timer && this->timer->IsRunning()) {
+        this->timerText = new wxStaticText(
+            this, 
+            ID_TimerText, 
+            to_string(this->time), 
+            wxPoint(500, 50), 
+            wxSize(100, 50)
+        );
+        this->timerText->SetFont(wxFont(20, wxFONTFAMILY_SCRIPT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+        this->timerText->SetForegroundColour(wxColor(255, 0, 0));
+    }
+    else {
+        clearFrame();
+        this->SetSize(800, 600);
+
+        // display my status
+        this->displayeStatus();
+        // display players
+        this->displayPlayers();
+
+        if (this->game->isPlaying()) {
+            // display question
+            this->displayQuestion();
+        }
+    }
+
     string response;
     if (!this->receiveMesage(response)) {
         wxLogMessage("Failed to connect to server");

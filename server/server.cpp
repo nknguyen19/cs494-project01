@@ -260,6 +260,14 @@ void Server::handleInGameCommand(int socket_id) {
 void Server::handleAnswerCommand(int socket_id, string answer) {
 	try {
 		handleInGameCommand(socket_id);
+		if (answer.substr(0, 7) == "TIMEOUT") {
+			auto d = descriptor[socket_id];
+			d.first->submitAnswer(' ');
+			d.first->notifyAllPlayers();
+			if (d.first->isFinished())
+				remove(d.first);
+			return;
+		}
 		if (answer.length() != 1 || 
 			toupper(answer[0]) < 'A' || 'D' < toupper(answer[0])
 		)

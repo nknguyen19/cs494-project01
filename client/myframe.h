@@ -19,6 +19,9 @@ private:
     wxSocketClient *client;
     vector<wxControl*> controls;
     Game *game;
+    wxTimer *timer;
+    wxStaticText *timerText;
+    int time;
 
 public:
     MyFrame();
@@ -41,6 +44,7 @@ public:
     void OnMoveTurn(wxCommandEvent &event);
     void OnLogout(wxCommandEvent &event);
     void OnNewGame(wxCommandEvent &event);
+    void OnTimer(wxTimerEvent &event);
     void handleCorrectAnswer();
     void handleWrongAnswer();
 
@@ -50,6 +54,7 @@ public:
     void displayPlayers();
     void displayQuestion();
     void displayeStatus();
+    void displayTimer();
     DECLARE_EVENT_TABLE();
 };
 
@@ -71,6 +76,8 @@ enum
     ID_NumberOfPlayer = 40,
     ID_NumberOfQuestion = 41,
     ID_EliminatedIcon = 42,
+    ID_Timer = 50,
+    ID_TimerText = 51
 };
 
 #endif
