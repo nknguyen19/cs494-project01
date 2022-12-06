@@ -16,4 +16,4 @@ go to project root directory and run `cmake <path to wxWidgets-[version]>`
 g++ helloworld.cpp -o prog `wx-config --cppflags --libs` | ./prog
 ```
 
-Youtube Link to Demo video: https://www.youtube.com/watch?v=98MRb0gom54
+Youtube Link to Demo video: https://www.youtube.com/watch?v=_3LMX2f99Dk
