@@ -276,6 +276,9 @@ void MyFrame::OnMoveTurn(wxCommandEvent &event)
         wxLogMessage("You are eliminated");
         return;
     }
+    if (this->timer != NULL && this->timer->IsRunning()) {
+        this->timer->Stop();
+    }
     this->sendMessage("MOVE");
     string response;
     if (!this->receiveMesage(response))
